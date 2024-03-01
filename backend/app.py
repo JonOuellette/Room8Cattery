@@ -36,6 +36,14 @@ DEFAULT_IMAGE_URL = "https://www.freeiconspng.com/uploads/cats-paw-icon-17.png"
 connect_db(app)
 
 ####################################################
+# Helper functions for role checks
+def is_admin():
+    return g.user and g.user.is_admin
+
+def is_foster_or_admin():
+    return g.user and (g.user.is_foster or g.user.is_admin)
+
+####################################################
 # User signup/login/logout
 
 @app.before_request
@@ -140,7 +148,22 @@ def home():
         'featured_cats': featured_cats_data,
         'message': 'Welcome to Room8Cattery!'
     })
-#####################################################################################################################
+
+##############################################################################################################
+#Set User to Foster (Admins Only)
+
+@app.route('/api/users/<int:user_id>/set-foster', methods=['PATCH'])
+def set_user_foster(user_id):
+    if not is_admin():
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    user = User.query.get_or_404(user_id)
+    user.is_foster = True
+    db.session.commit()
+
+    return jsonify({'message': f'User {user_id} set as foster'}), 200
+
+##############################################################################################################
 # Route for stripe donation button - using test key as this will be a test account.
 
 @app.route('/create-charge', methods=['POST'])
@@ -186,7 +209,7 @@ def get_adoptable_cats():
 #Cat Details route
 @app.route('/api/cats/<int:cat_id>', methods=['GET'])
 def get_cat_details(cat_id):
-    cat = Cats.query.get_or_404(cat_id)
+    cat = Cat.query.get_or_404(cat_id)
     cat_details = {
         'id': cat.id,
         'name': cat.cat_name,
@@ -203,10 +226,11 @@ def get_cat_details(cat_id):
 # Route for either Fosters or Admins to add cats to the Adoptable list
 @app.route('/api/cats', methods=['POST'])
 def add_cat():
-    # Assume user's role and ID come from session or token
-    if not g.user or (not g.user.is_foster and not g.user.is_admin):
+    # Vefify  direct role and ID checks with is_foster_or_admin()
+    if not is_foster_or_admin():
         return jsonify({'error': 'Unauthorized'}), 403
 
+    # adding new cat
     data = request.json
     new_cat = Cat(
         cat_name=data.get('cat_name'),
@@ -216,17 +240,18 @@ def add_cat():
         special_needs=data.get('special_needs', ''),
         cat_image=data.get('cat_image', DEFAULT_IMAGE_URL),
         is_featured=data.get('is_featured', False),
-        foster_id=g.user.id  # or fetch based on logged-in user
+        foster_id=g.user.id  # Assuming this is correct and foster_id refers to the user who adds the cat
     )
     db.session.add(new_cat)
     db.session.commit()
 
+    # Return success response
     return jsonify({'message': 'New cat added successfully'}), 201
 
 ### Only admins can update if Cat isAdopted
 @app.route('/api/cats/<int:cat_id>/adopt', methods=['PATCH'])
 def update_cat_adoption(cat_id):
-    if not g.user or not g.user.is_admin:
+    if not is_admin():
         return jsonify({'error': 'Unauthorized'}), 403
 
     cat = Cat.query.get_or_404(cat_id)

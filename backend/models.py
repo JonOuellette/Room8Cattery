@@ -15,8 +15,8 @@ class User(db.Model):
     first_name = db.Column(db.String(25), nullable=False)
     last_name = db.Column(db.String(25), nullable=False)
     password = db.Column(db.String(255), nullable=False)
-    is_admin = db.Column(db.Boolean, default=False, nullable=False)
-    is_foster = db.Column(db.Boolean, default=False, nullable=False)
+    is_admin = db.Column(db.Boolean, default=False)
+    is_foster = db.Column(db.Boolean, default=False)
 
     fosters = db.relationship('Foster', backref='user', lazy=True)
     adoptions = db.relationship('Adoption', backref='user', lazy=True)
