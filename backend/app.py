@@ -1,6 +1,7 @@
 import os
 
 from flask import Flask, render_template, redirect, request, session, jsonify, g, flash, url_for
+import stripe
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
@@ -12,9 +13,9 @@ import random
 app = Flask(__name__)
 app.app_context().push()
 
-from secretkeys import MY_SECRET_KEY
-from models import connect_db, User, db, Cat
-from forms import RegisterForm, LoginForm
+from secretkeys import MY_SECRET_KEY, STRIPE_API_KEY
+from models import connect_db, User, db, Cat, Volunteer, Donation
+from forms import RegisterForm, LoginForm, AddCatForm, VolunteerForm
 
 CURR_USER_KEY = "curr_user"
 
@@ -26,6 +27,8 @@ app.config['SQLALCHEMY_ECHO'] = False
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', MY_SECRET_KEY)
 toolbar = DebugToolbarExtension(app)
+
+stripe.api_key = STRIPE_API_KEY
 
 connect_db(app)
 
@@ -134,5 +137,58 @@ def home():
         'featured_cats': featured_cats_data,
         'message': 'Welcome to Room8Cattery!'
     })
+#####################################################################################################################
+# Route for stripe donation button - using test key as this will be a test account.
+
+@app.route('/create-charge', methods=['POST'])
+def create_charge():
+    try:
+        # Amount in cents
+        amount = int(request.json.get('amount', 0))
+        
+        # Create a charge: this will charge the user's card
+        charge = stripe.Charge.create(
+            amount=amount,
+            currency='usd',
+            source=request.json.get('token'),  # obtained with Stripe.js on the frontend
+            description="Donation"
+        )
+
+        # Save this charge in your database
+        donation = Donation(amount=amount, stripe_charge_id=charge['id'])
+        db.session.add(donation)
+        db.session.commit()
+
+        return jsonify(charge), 200
+    except stripe.error.StripeError as e:
+        # Handle the error
+        return jsonify(error=str(e)), 400
+
+#####################################################################################################################
+# Volunteer form - allows users to submit form indicating interest in volunteering
+
+@app.route('/volunteer', methods=['POST'])
+def volunteer():
+    data = request.json  # Get data from POST request sent by React frontend
+    form = VolunteerForm(meta={'csrf': False}, formdata=None, data=data)  # Disable CSRF for API usage
+
+    if form.validate():
+        volunteer = Volunteer(
+            first_name=data.get('first_name'),
+            last_name=data.get('last_name'),
+            email=data.get('email'),
+            phone=data.get('phone', ''),
+            days_available=','.join(data.get('days_available', [])),  # Expecting an array of days from React
+            start_date=datetime.strptime(data.get('start_date'), '%Y-%m-%d'),
+            about=data.get('about', '')
+        )
+        db.session.add(volunteer)
+        db.session.commit()
+        return jsonify({'message': 'Thank you for applying to be a volunteer!'}), 200  # Send a success response
+    else:
+        return jsonify({'errors': form.errors}), 400  # Send back form validation errors
+    
 
 
+if __name__ == '__main__':
+    app.run(debug=True)

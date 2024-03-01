@@ -89,9 +89,9 @@ class Cats(db.Model):
     cat_name = db.Column(db.String, nullable = False)
     age = db.Column(db.Integer, nullable = False)
     breed = db.Column(db.String, nullable = False)
-    description = db.Column(db.Text nullable = True)
-    special_needs = db.Column(db.Text nullable = True)
-    image_url = db.Column(db.Text, nullable = False, default = DEFAULT_IMAGE_URL)
+    description = db.Column(db.Text, nullable = True)
+    special_needs = db.Column(db.Text, nullable = True)
+    cat_image = db.Column(db.Text, nullable = False, default = DEFAULT_IMAGE_URL)
     is_featured = db.Column(db.Boolean, default = False, nullable = False)
     foster_id = db.Column(db.Integer, db.ForeignKey("fosters.id"), nullable=False)
 
@@ -108,6 +108,29 @@ class Adoptions(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     adopted = db.Column(db.Boolean)
     adoption_date = db.Column(db.Date)
+
+class Volunteer(db.Model):
+    __tablename__ = 'volunteers'
+
+    id = db.Column(db.Integer, primary_key=True)
+    first_name = db.Column(db.String(50), nullable=False)
+    last_name = db.Column(db.String(50), nullable=False)
+    email = db.Column(db.String(100), nullable=False)
+    phone = db.Column(db.String(20), nullable=True)
+    days_available = db.Column(db.String(50), nullable=True)  # Comma-separated days
+    start_date = db.Column(db.Date, nullable=False)
+    about = db.Column(db.Text, nullable=True)
+
+    def __repr__(self):
+        return f'<Volunteer {self.first_name} {self.last_name}>'
+    
+
+class Donation(db.Model):
+    __tablename__ = 'donations'
+    id = db.Column(db.Integer, primary_key=True)
+    amount = db.Column(db.Integer, nullable=False)  # Store amount in cents
+    stripe_charge_id = db.Column(db.String(255), nullable=False)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
 
 
 def connect_db(app):
