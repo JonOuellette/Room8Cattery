@@ -72,7 +72,7 @@ class Admin(db.Model):
     user_id = db.Column (db.Integer, db.ForeignKey('users.id'))
     
 
-class Fosters(db.Model):
+class Foster(db.Model):
     __tablename__ = "fosters"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -82,7 +82,7 @@ class Fosters(db.Model):
     # Relationship to Cats
     cat = db.relationship('Cat', back_populates='foster')
 
-class Cats(db.Model):
+class Cat(db.Model):
     __tablename__ = "cats"
     
     id = db.Column(db.Integer, primary_key = True)
@@ -100,7 +100,7 @@ class Cats(db.Model):
     # Relationship for adoptions
     adoptions = db.relationship('Adoption', backref='cat', lazy=True)
 
-class Adoptions(db.Model):
+class Adoption(db.Model):
     __tablename__ = "adoptions"
 
     id = db.Column(db.Integer, primary_key = True)

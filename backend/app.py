@@ -1,6 +1,7 @@
 import os
 
-from flask import Flask, render_template, redirect, request, session, jsonify, g, flash, url_for
+from flask import Flask, render_template, redirect, request, session, jsonify, g, flash
+from datetime import datetime
 import stripe
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
@@ -29,6 +30,8 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', MY_SECRET_KEY)
 toolbar = DebugToolbarExtension(app)
 
 stripe.api_key = STRIPE_API_KEY
+
+DEFAULT_IMAGE_URL = "https://www.freeiconspng.com/uploads/cats-paw-icon-17.png" 
 
 connect_db(app)
 
@@ -163,6 +166,75 @@ def create_charge():
     except stripe.error.StripeError as e:
         # Handle the error
         return jsonify(error=str(e)), 400
+#####################################################################################################################
+
+#Route to display list of adoptable cats
+@app.route('/api/cats/adoptable', methods=['GET'])
+def get_adoptable_cats():
+    adoptable_cats = Cat.query.filter_by(is_featured=True, adopted=False).all()
+    cats_data = [{
+        'id': cat.id,
+        'name': cat.cat_name,
+        'age': cat.age,
+        'breed': cat.breed,
+        'description': cat.description,
+        'image_url': cat.cat_image
+    } for cat in adoptable_cats]
+
+    return jsonify(cats_data)
+
+#Cat Details route
+@app.route('/api/cats/<int:cat_id>', methods=['GET'])
+def get_cat_details(cat_id):
+    cat = Cats.query.get_or_404(cat_id)
+    cat_details = {
+        'id': cat.id,
+        'name': cat.cat_name,
+        'age': cat.age,
+        'breed': cat.breed,
+        'description': cat.description,
+        'special_needs': cat.special_needs,
+        'cat_image': cat.cat_image,
+        'is_featured': cat.is_featured
+        # Add any additional fields you want to expose
+    }
+    return jsonify(cat_details)
+
+# Route for either Fosters or Admins to add cats to the Adoptable list
+@app.route('/api/cats', methods=['POST'])
+def add_cat():
+    # Assume user's role and ID come from session or token
+    if not g.user or (not g.user.is_foster and not g.user.is_admin):
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    data = request.json
+    new_cat = Cat(
+        cat_name=data.get('cat_name'),
+        age=data.get('age'),
+        breed=data.get('breed'),
+        description=data.get('description', ''),
+        special_needs=data.get('special_needs', ''),
+        cat_image=data.get('cat_image', DEFAULT_IMAGE_URL),
+        is_featured=data.get('is_featured', False),
+        foster_id=g.user.id  # or fetch based on logged-in user
+    )
+    db.session.add(new_cat)
+    db.session.commit()
+
+    return jsonify({'message': 'New cat added successfully'}), 201
+
+### Only admins can update if Cat isAdopted
+@app.route('/api/cats/<int:cat_id>/adopt', methods=['PATCH'])
+def update_cat_adoption(cat_id):
+    if not g.user or not g.user.is_admin:
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    cat = Cat.query.get_or_404(cat_id)
+    cat.adopted = True
+    db.session.commit()
+
+    return jsonify({'message': 'Cat adoption status updated'}), 200
+
 
 #####################################################################################################################
 # Volunteer form - allows users to submit form indicating interest in volunteering
