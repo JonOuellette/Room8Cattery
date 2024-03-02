@@ -272,7 +272,7 @@ def add_cat():
         description=data.get('description', ''),
         special_needs=data.get('special_needs', ''),
         cat_image=data.get('cat_image', DEFAULT_IMAGE_URL),
-        microchip = data.get('microchip')
+        microchip = data.get('microchip'),
         is_featured=data.get('is_featured', False),
         foster_id=g.user.id  
     )
