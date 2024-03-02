@@ -26,6 +26,7 @@ class AddCatForm(FlaskForm):
     breed = StringField('Breed', validators=[DataRequired(), Length(max=100)])
     description = TextAreaField('Description', validators=[Optional(), Length(max=500)])
     special_needs = TextAreaField('Special Needs', validators=[Optional(), Length(max=500)])
+    microchip = IntegerField("Microchip Number", validatiors =[Optional()])
     cat_image = StringField('Cat Image URL', validators=[DataRequired(), Length(max=255)])
     is_featured = BooleanField('Feature this Cat?', default=False)
     foster_id = SelectField('Foster', coerce=int, choices=[])  # You need to populate choices in the view or controller

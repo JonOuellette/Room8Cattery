@@ -3,6 +3,8 @@ import os
 from flask import Flask, render_template, redirect, request, session, jsonify, g, flash
 from datetime import datetime
 import stripe
+from google.oauth2.service_account import Credentials
+from googleapiclient.discovery import build
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
@@ -36,13 +38,27 @@ DEFAULT_IMAGE_URL = "https://www.freeiconspng.com/uploads/cats-paw-icon-17.png"
 connect_db(app)
 
 ####################################################
-# Helper functions for role checks
+# Helper functions 
+
+#Helper function for role checks
 def is_admin():
     return g.user and g.user.is_admin
 
 def is_foster_or_admin():
     return g.user and (g.user.is_foster or g.user.is_admin)
 
+
+# Google Sheets initialization:
+
+def initialize_google_sheets():
+    scopes = ['https://www.googleapis.com/auth/spreadsheets']
+    service_account_file = os.path.join(os.getcwd(), 'config', 'room8cattery-397dd6b798b8.json')
+
+    credentials = Credentials.from_service_account_file(
+        service_account_file, scopes=scopes)
+
+    service = build('sheets', 'v4', credentials=credentials)
+    return service.spreadsheets()
 ####################################################
 # User signup/login/logout
 
@@ -150,8 +166,9 @@ def home():
     })
 
 ##############################################################################################################
-#Set User to Foster (Admins Only)
+#
 
+#Set User to Foster (Admins Only)
 @app.route('/api/users/<int:user_id>/set-foster', methods=['PATCH'])
 def set_user_foster(user_id):
     if not is_admin():
@@ -163,6 +180,21 @@ def set_user_foster(user_id):
 
     return jsonify({'message': f'User {user_id} set as foster'}), 200
 
+
+@app.route('/api/users/<int:user_id>/update', methods=['PATCH'])
+def update_user_info(user_id):
+    if 'user_id' not in session or session['user_id'] != user_id:
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    user = User.query.get_or_404(user_id)
+    data = request.json
+    if 'email' in data:
+        user.email = data['email']
+    if 'phone' in data:
+        user.phone = data['phone']
+    
+    db.session.commit()
+    return jsonify({'message': 'User information updated successfully'}), 200
 ##############################################################################################################
 # Route for stripe donation button - using test key as this will be a test account.
 
@@ -190,7 +222,8 @@ def create_charge():
         # Handle the error
         return jsonify(error=str(e)), 400
 #####################################################################################################################
-
+# CAT ROUTES
+    
 #Route to display list of adoptable cats
 @app.route('/api/cats/adoptable', methods=['GET'])
 def get_adoptable_cats():
@@ -219,7 +252,7 @@ def get_cat_details(cat_id):
         'special_needs': cat.special_needs,
         'cat_image': cat.cat_image,
         'is_featured': cat.is_featured
-        # Add any additional fields you want to expose
+        
     }
     return jsonify(cat_details)
 
@@ -239,8 +272,9 @@ def add_cat():
         description=data.get('description', ''),
         special_needs=data.get('special_needs', ''),
         cat_image=data.get('cat_image', DEFAULT_IMAGE_URL),
+        microchip = data.get('microchip')
         is_featured=data.get('is_featured', False),
-        foster_id=g.user.id  # Assuming this is correct and foster_id refers to the user who adds the cat
+        foster_id=g.user.id  
     )
     db.session.add(new_cat)
     db.session.commit()
@@ -260,6 +294,87 @@ def update_cat_adoption(cat_id):
 
     return jsonify({'message': 'Cat adoption status updated'}), 200
 
+@app.route('/api/cats/<int:cat_id>', methods=['PATCH'])
+def update_cat_info(cat_id):
+    if not is_foster_or_admin():
+        return jsonify({'error': 'Unauthorized'}), 403
+    cat = Cat.query.get_or_404(cat_id)
+    data = request.json
+   
+    cat.cat_name = data.get('cat_name', cat.cat_name)
+    cat.age = data.get('age', cat.age)
+    cat.breed = data.get('breed', cat.breed)
+    cat.description = data.get('description, cat.description')
+    cat.special_needs = data.get('special_needs', cat.special_needs)
+    cat.microchip = data.get('microchip', cat.microchip)
+    cat.cat_image = data.get('cat_image', cat.cat_image)
+    
+    if is_admin():
+        cat.foster_id = data.get('foster_id', cat.foster_id)
+
+    db.session.commit()
+    return jsonify({'message': 'Cat updated successfully'}), 200
+
+@app.route('/api/cats/<int:cat_id>', methods=['DELETE'])
+def delete_cat(cat_id):
+    if not is_admin():
+        return jsonify({'error': 'Unauthorized'}), 403
+    cat = Cat.query.get_or_404(cat_id)
+    db.session.delete(cat)
+    db.session.commit()
+    return jsonify({'message': 'Cat deleted successfully'}), 200
+
+
+####################################################################################################################
+#exporting cat data to spreadsheets using Google SpreadSheets API
+
+@app.route('/export/cats')
+def export_cats_to_sheet():
+    spreadsheet_id = '1g3ZoPFgyB7uEeYFu446DlRj3ITIkKpy1SMgUNXPMrBI'  #Google Sheet ID
+    range_name = 'Cats!A1'  
+
+    # Fetch cats data from your database
+    cats = Cat.query.all()
+    values = [['ID', 'Name', 'Age', 'Breed', 'Description', 'Special Needs', 'Foster Name', 'Microchip']]  # Column headers
+    for cat in cats:
+        # Utilizing the relationship between Cats and Fosters like cat.foster to get foster's name
+        foster_name = cat.foster.first_name + ' ' + cat.foster.last_name if cat.foster else 'N/A'
+        values.append([cat.id, cat.cat_name, cat.age, cat.breed, cat.description, cat.special_needs, foster_name, cat.microchip])
+
+    # Initialize Google Sheets API
+    sheet = initialize_google_sheets()
+    body = {'values': values}
+    result = sheet.values().update(
+        spreadsheetId=spreadsheet_id,
+        range=range_name,
+        valueInputOption='RAW',
+        body=body).execute()
+
+    return jsonify({'updated_cells': result.get('updatedCells')})
+
+
+@app.route('/export/fosters')
+def export_fosters_to_sheet():
+    spreadsheet_id = '12yvi-j8rOJoKeWdbyL_Z7AdBxaPs6Is4Hk6AGMOpK7k'  #Google Sheet Id
+    range_name = 'Fosters!A1'  
+
+    # Fetch foster data from your database
+    fosters = User.query.filter_by(is_foster=True).all()
+    values = [['User ID', 'First Name', 'Last Name', 'Email', 'Phone Number']]  # Column headers
+    values += [[user.id, user.first_name, user.last_name, user.email, user.phone or ''] for user in fosters]
+
+    # Initialize Google Sheets API
+    sheet = initialize_google_sheets()
+    body = {
+        'values': values
+    }
+    result = sheet.values().update(
+        spreadsheetId=spreadsheet_id,
+        range=range_name,
+        valueInputOption='RAW',
+        body=body).execute()
+
+    return jsonify({'updated_cells': result.get('updatedCells')})
 
 #####################################################################################################################
 # Volunteer form - allows users to submit form indicating interest in volunteering
@@ -289,3 +404,4 @@ def volunteer():
 
 if __name__ == '__main__':
     app.run(debug=True)
+

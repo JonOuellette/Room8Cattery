@@ -91,6 +91,7 @@ class Cat(db.Model):
     breed = db.Column(db.String, nullable = False)
     description = db.Column(db.Text, nullable = True)
     special_needs = db.Column(db.Text, nullable = True)
+    microchip = db.Column(db.Integer)
     cat_image = db.Column(db.Text, nullable = False, default = DEFAULT_IMAGE_URL)
     is_featured = db.Column(db.Boolean, default = False, nullable = False)
     foster_id = db.Column(db.Integer, db.ForeignKey("fosters.id"), nullable=False)
