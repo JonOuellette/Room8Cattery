@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, render_template, redirect, request, session, jsonify, g, flash
+from flask import Flask, render_template, redirect, request, session, jsonify, g, flash, abort
 from datetime import datetime
 import stripe
 from google.oauth2.service_account import Credentials
@@ -8,6 +8,7 @@ from googleapiclient.discovery import build
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
+from flask_bcrypt import Bcrypt
 
 import requests
 import re
@@ -15,6 +16,7 @@ import random
 
 app = Flask(__name__)
 app.app_context().push()
+bcrypt = Bcrypt(app)
 
 from secretkeys import MY_SECRET_KEY, STRIPE_API_KEY
 from models import connect_db, User, db, Cat, Volunteer, Donation
@@ -79,71 +81,78 @@ def user_login(user):
 
 def user_logout():
     """Logout user"""
+    session.pop(CURR_USER_KEY, None)
+ 
 
-    if CURR_USER_KEY in session:
-        del session[CURR_USER_KEY]
+@app.route('/admin/create-user', methods=['POST'])
+def create_user():
+    if not is_admin():
+        return jsonify({'error': 'Unauthorized'}), 403
 
-@app.route('/signup', methods = ['GET', 'POST'])
-def signup(): 
-    """Handles user signup. 
-        Creates new users and adds them to the database.
-    """
+    data = request.json
+    username = data.get('username')
+    email = data.get('email')
+    password = data.get('password')
+    first_name = data.get('first_name')
+    last_name = data.get('last_name')
+    is_foster = data.get('is_foster', False)
 
-    if CURR_USER_KEY in session:
-        del session[CURR_USER_KEY]
-    
-    form = RegisterForm()
+    # Validate user inputs
+    if not all([username, email, password, first_name, last_name]) or not re.match("[^@]+@[^@]+\.[^@]+", email):
+        return jsonify({'error': 'Invalid input'}), 400
 
-    if form.validate_on_submit():
-        try:
-            user = User.signup(
-                username = form.username.data,
-                password = form.password.data,
-                email = form.email.data,
-                first_name = form.first_name.data,
-                last_name = form.last_name.data
-            )
-            db.session.commit()
-        
-        except IntegrityError as e:
-            flash("Username already taken", 'danger'),
-            return render_template('signup.html', form = form)
-        
-        user_login(user)
+    # Additional password strength validation can be added here
 
-        return redirect("/")
-    
-    else: 
-        return render_template('signup.html', form=form)
+    try:
+        new_user = User.signup(
+            username=username,
+            email=email,
+            password=password,
+            first_name=first_name,
+            last_name=last_name,
+            is_foster=is_foster
+        )
+        db.session.commit()
+        return jsonify({
+            'message': 'User created successfully',
+            'user': {
+                'id': new_user.id,
+                'username': new_user.username,
+                'email': new_user.email,
+                'first_name': new_user.first_name,
+                'last_name': new_user.last_name,
+                'is_foster': new_user.is_foster
+            }
+        }), 201
+    except IntegrityError:
+        db.session.rollback()
+        return jsonify({'error': 'This username or email is already used'}), 400
 
-@app.route('/login', methods= ["GET", "POST"])
+
+@app.route('/login', methods=["POST"])
 def login():
     """Handles user login"""
+    data = request.json  # Get data from POST request
+    username = data.get('username')
+    password = data.get('password')
 
-    form = LoginForm()
+    user = User.authenticate(username, password)
 
-    if form.validate_on_submit():
-        user = User.authenticate(form.username.data, form.password.data)
-
-        if user:
-            user_login(user)
-            flash(f"Hello {user.username}!", "success")
-            return redirect("/")
-        
-        flash("Invalid credentials", 'danger')
-    
-    return render_template('login.html' ,form=form)
+    if user and (user.is_foster or user.is_admin):
+        user_login(user)  # Assuming this sets some kind of session or token
+        return jsonify({"message": f"Hello {user.username}!", "user": {"id": user.id, "username": user.username, "is_admin": user.is_admin, "is_foster": user.is_foster}}), 200
+    else:
+        return jsonify({"error": "Invalid credentials or unauthorized access"}), 401
 
 
-@app.route('/logout', methods = ["GET", "POST"])
+
+@app.route('/logout', methods=["POST"])
 def logout():
     """Handles logging out user."""
+    session.pop(CURR_USER_KEY, None)  # This removes the key if it exists, and does nothing if it doesn't
+    return jsonify({'success': True, 'message': 'You have successfully logged out'}), 200
 
-    user_logout()
 
-    flash("You have successfully logged out", 'success')
-
-    return redirect("/login")
 
 ##############################################################################################################
 
@@ -166,35 +175,29 @@ def home():
     })
 
 ##############################################################################################################
-#
-
-#Set User to Foster (Admins Only)
-@app.route('/api/users/<int:user_id>/set-foster', methods=['PATCH'])
-def set_user_foster(user_id):
-    if not is_admin():
-        return jsonify({'error': 'Unauthorized'}), 403
-
-    user = User.query.get_or_404(user_id)
-    user.is_foster = True
-    db.session.commit()
-
-    return jsonify({'message': f'User {user_id} set as foster'}), 200
-
 
 @app.route('/api/users/<int:user_id>/update', methods=['PATCH'])
 def update_user_info(user_id):
-    if 'user_id' not in session or session['user_id'] != user_id:
+    # Ensure the logged-in user is the same as the one whose information is being updated
+    if g.user is None or g.user.id != user_id:
         return jsonify({'error': 'Unauthorized'}), 403
     
     user = User.query.get_or_404(user_id)
     data = request.json
+
     if 'email' in data:
         user.email = data['email']
     if 'phone' in data:
         user.phone = data['phone']
+    if 'password' in data:
+        # Hash the new password using bcrypt before storing it
+        hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
+        user.password = hashed_password
     
     db.session.commit()
     return jsonify({'message': 'User information updated successfully'}), 200
+
+
 ##############################################################################################################
 # Route for stripe donation button - using test key as this will be a test account.
 
@@ -212,7 +215,7 @@ def create_charge():
             description="Donation"
         )
 
-        # Save this charge in your database
+       
         donation = Donation(amount=amount, stripe_charge_id=charge['id'])
         db.session.add(donation)
         db.session.commit()

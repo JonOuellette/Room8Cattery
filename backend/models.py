@@ -15,12 +15,11 @@ class User(db.Model):
     first_name = db.Column(db.String(25), nullable=False)
     last_name = db.Column(db.String(25), nullable=False)
     password = db.Column(db.String(255), nullable=False)
+    phone_number = db.Column(db.Integer)
     is_admin = db.Column(db.Boolean, default=False)
     is_foster = db.Column(db.Boolean, default=False)
 
-    fosters = db.relationship('Foster', backref='user', lazy=True)
-    adoptions = db.relationship('Adoption', backref='user', lazy=True)
-
+    cats = db.relationship('Cat', secondary='fosters', back_populates='fosters')
 
     def __repr__(self):
         return f"<User #{self.id}: {self.username}, {self.email}>"
@@ -55,15 +54,12 @@ class User(db.Model):
 
         If can't find matching user (or if password is wrong), returns False.
         """
-
         user = cls.query.filter_by(username=username).first()
 
-        if user:
-            is_auth = bcrypt.check_password_hash(user.password, password)
-            if is_auth:
-                return user
-
+        if user and bcrypt.check_password_hash(user.password, password):
+            return user
         return False
+
 
 class Admin(db.Model):
     __tablename__ = "admins"
@@ -84,7 +80,7 @@ class Foster(db.Model):
 
 class Cat(db.Model):
     __tablename__ = "cats"
-    
+    # Cat attributes
     id = db.Column(db.Integer, primary_key = True)
     cat_name = db.Column(db.String, nullable = False)
     age = db.Column(db.Integer, nullable = False)
@@ -96,10 +92,8 @@ class Cat(db.Model):
     is_featured = db.Column(db.Boolean, default = False, nullable = False)
     foster_id = db.Column(db.Integer, db.ForeignKey("fosters.id"), nullable=False)
 
-    # Reverse Relationship
-    foster = db.relationship('Foster', back_populates='cat')
-    # Relationship for adoptions
-    adoptions = db.relationship('Adoption', backref='cat', lazy=True)
+    # Relationships
+    fosters = db.relationship('User', secondary='fosters', back_populates='cats')
 
 class Adoption(db.Model):
     __tablename__ = "adoptions"
