@@ -6,7 +6,6 @@ const UserContext = createContext();
 // Provider Component
 export const UserProvider = ({ children }) => {
     const [user, setUser] = useState(null);
-
     return (
         <UserContext.Provider value={{ user, setUser }}>
             {children}

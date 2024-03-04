@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import Room8Api from '../api/api'; 
+import Room8Api from '../../api/api';
 import { useParams } from 'react-router-dom';
 
 function CatDetails() {

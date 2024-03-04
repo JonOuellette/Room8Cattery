@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import Room8Api from '../api/api'; 
-import CatDetail from './CatDetail'; 
+import Room8Api from '../../api/api';
+import CatDetails from '../CatDetails/CatDetails';
 
 function CatList() {
     const [cats, setCats] = useState([]);
@@ -29,7 +29,7 @@ function CatList() {
             <div className="cat-list">
                 {cats.length ? (
                     cats.map(cat => (
-                        <CatDetail key={cat.id} cat={cat} /> // Render CatDetail component for each cat
+                        <CatDetails key={cat.id} cat={cat} /> // Render CatDetails component for each cat
                     ))
                 ) : (
                     <p>No cats available for adoption right now.</p>

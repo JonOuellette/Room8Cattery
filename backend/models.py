@@ -99,7 +99,7 @@ class Adoption(db.Model):
     __tablename__ = "adoptions"
 
     id = db.Column(db.Integer, primary_key = True)
-    cat_id = db.Column(db.Ineger, db.ForeignKey('cats.id'))
+    cat_id = db.Column(db.Integer, db.ForeignKey('cats.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     adopted = db.Column(db.Boolean)
     adoption_date = db.Column(db.Date)

@@ -1,10 +1,10 @@
 import React, { useState, useContext } from 'react';
 import axios from 'axios';
-import { UserContext } from '../UserContext';
+import { useUser } from '../UserContext';
 
 
 const SignUp = () => {
-    const { userRole } = useContext(UserContext); // userRole should be stored in UserContext
+    const { user, setUser } = useUser(); 
     const [formData, setFormData] = useState({
         username: '',
         email: '',

@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from models import Cat, User
-from wtforms import StringField, IntegerField, TextAreaField, BooleanField, SubmitField, SelectField, SelectMultipleField, widgets
-from wtforms.validators import DataRequired, Length, Optional, NumberRange, InputRequired, Email, PasswordField, Optional, DateField, SubmitField
+from wtforms import StringField, IntegerField, TextAreaField, BooleanField, SubmitField, SelectField, SelectMultipleField, widgets, PasswordField, DateField
+from wtforms.validators import DataRequired, Length, Optional, NumberRange, InputRequired, Email
 from wtforms_sqlalchemy.fields import QuerySelectField
 
 
