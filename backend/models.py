@@ -6,11 +6,19 @@ bcrypt = Bcrypt()
 
 DEFAULT_IMAGE_URL = "https://www.freeiconspng.com/uploads/cats-paw-icon-17.png" 
 
+class Foster(db.Model):
+    __tablename__ = "fosters"
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"), nullable=False)
+    cat_id = db.Column(db.Integer, db.ForeignKey('cats.id', ondelete="CASCADE"), nullable=False)
+    
+
+
 class User(db.Model):
     __tablename__ = "users"
 
-    id = db.Column(db.Integer, primary_key = True)
-    username = db.Column(db.String(15), nullable=False, unique = True)
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(15), nullable=False, unique=True)
     email = db.Column(db.String(40), nullable=False, unique=True)
     first_name = db.Column(db.String(25), nullable=False)
     last_name = db.Column(db.String(25), nullable=False)
@@ -19,7 +27,7 @@ class User(db.Model):
     is_admin = db.Column(db.Boolean, default=False)
     is_foster = db.Column(db.Boolean, default=False)
 
-    cats = db.relationship('Cat', secondary='fosters', back_populates='fosters')
+    fostered_cats = db.relationship('Foster', backref='foster', lazy='dynamic')
 
     def __repr__(self):
         return f"<User #{self.id}: {self.username}, {self.email}>"
@@ -30,20 +38,19 @@ class User(db.Model):
 
         Hashes password and adds user to system.
         """
-
         hashed_pwd = bcrypt.generate_password_hash(password).decode('UTF-8')
 
         user = User(
             username=username,
             email=email,
             password=hashed_pwd,
-            first_name = first_name,
-            last_name = last_name
+            first_name=first_name,
+            last_name=last_name
         )
 
         db.session.add(user)
         return user
-    
+
     @classmethod
     def authenticate(cls, username, password):
         """Find user with `username` and `password`.
@@ -67,33 +74,22 @@ class Admin(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     user_id = db.Column (db.Integer, db.ForeignKey('users.id'))
     
-
-class Foster(db.Model):
-    __tablename__ = "fosters"
-
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"))
-    cat_id = db.Column(db.Integer, db.ForeignKey('cats.id'), nullable=False)
-
-    # Relationship to Cats
-    cat = db.relationship('Cat', back_populates='foster')
-
 class Cat(db.Model):
     __tablename__ = "cats"
-    # Cat attributes
-    id = db.Column(db.Integer, primary_key = True)
-    cat_name = db.Column(db.String, nullable = False)
-    age = db.Column(db.Integer, nullable = False)
-    breed = db.Column(db.String, nullable = False)
-    description = db.Column(db.Text, nullable = True)
-    special_needs = db.Column(db.Text, nullable = True)
-    microchip = db.Column(db.Integer)
-    cat_image = db.Column(db.Text, nullable = False, default = DEFAULT_IMAGE_URL)
-    is_featured = db.Column(db.Boolean, default = False, nullable = False)
-    foster_id = db.Column(db.Integer, db.ForeignKey("fosters.id"), nullable=False)
 
-    # Relationships
-    fosters = db.relationship('User', secondary='fosters', back_populates='cats')
+    id = db.Column(db.Integer, primary_key=True)
+    cat_name = db.Column(db.String, nullable=False)
+    age = db.Column(db.Integer, nullable=False)
+    gender = db.Column(db.String, nullable=False)
+    breed = db.Column(db.String, nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    special_needs = db.Column(db.Text, nullable=True)
+    microchip = db.Column(db.BigInteger)
+    cat_image = db.Column(db.Text, nullable=False, default=DEFAULT_IMAGE_URL)
+    is_featured = db.Column(db.Boolean, default=False, nullable=False)
+    adopted = db.Column(db.Boolean, default=False, nullable=False)
+
+    fosters = db.relationship('Foster', backref='cat', lazy='dynamic')
 
 class Adoption(db.Model):
     __tablename__ = "adoptions"

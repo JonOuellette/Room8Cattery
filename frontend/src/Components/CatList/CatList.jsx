@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import Room8Api from '../../api/api';
 import CatDetails from '../CatDetails/CatDetails';
 
@@ -29,7 +30,9 @@ function CatList() {
             <div className="cat-list">
                 {cats.length ? (
                     cats.map(cat => (
-                        <CatDetails key={cat.id} cat={cat} /> // Render CatDetails component for each cat
+                        <div key={cat.id}>
+                            <Link to={`/cats/${cat.id}`}>View {cat.name}</Link> 
+                        </div>
                     ))
                 ) : (
                     <p>No cats available for adoption right now.</p>

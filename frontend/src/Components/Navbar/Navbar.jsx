@@ -19,12 +19,11 @@ const Navbar = () => {
                 <li><Link to="/about">About Us</Link></li>
                 <li><Link to="/adopt">Adopt</Link></li>
                 <li><Link to="/contact">Contact</Link></li>
-                <li><Link to="/fosters">Fosters Sign</Link></li>
                 <li><Link to="/donate">Donate</Link></li>
                 {userToken ? (
                     <li><button onClick={handleLogout}>Sign Out</button></li> // You can style this as needed
                 ) : (
-                    <li><Link to="/signin">Sign In</Link></li>
+                    <li><Link to="/signin">Foster Sign In</Link></li>
                 )}
             </ul>
         </nav>

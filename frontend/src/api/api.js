@@ -63,6 +63,10 @@ class Room8Api {
         return this.request(`api/cats/${catId}/adopt`, {}, 'patch');
     }
 
+    static async getFeaturedCats() {
+        return this.request('api/cats/featured');
+    }
+    
     // Donation API calls
     static async createCharge(data) {
         return this.request('create-charge', data, 'post');

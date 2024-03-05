@@ -5,6 +5,7 @@ function CatForm({ catId, setEditing, userRole }) {
     const [formData, setFormData] = useState({
         name: '',
         age: '',
+        gender: '',
         breed: '',
         description: '',
         specialNeeds: '',
@@ -21,6 +22,7 @@ function CatForm({ catId, setEditing, userRole }) {
                 setFormData({
                     name: catData.name,
                     age: catData.age,
+                    gender: catData.gender,
                     breed: catData.breed,
                     description: catData.description,
                     specialNeeds: catData.special_needs,
@@ -84,10 +86,17 @@ function CatForm({ catId, setEditing, userRole }) {
             <label htmlFor="age">Age:</label>
             <input type="number" id="age" name="age" value={formData.age} onChange={handleChange} required />
 
+            <label htmlFor="gender">Age:</label>
+            <input type="text" id="gender" name="gender" value={formData.gender} onChange={handleChange} required />
+
             <label htmlFor="breed">Breed:</label>
             <input type="text" id="breed" name="breed" value={formData.breed} onChange={handleChange} required />
 
-            {/* Additional fields */}
+            <label htmlFor="breed">Breed:</label>
+            <input type="text" id="breed" name="breed" value={formData.breed} onChange={handleChange} required />
+
+            <label htmlFor="breed">Breed:</label>
+            <input type="text" id="breed" name="breed" value={formData.breed} onChange={handleChange} required />
 
             {userRole === 'admin' && (
                 <>

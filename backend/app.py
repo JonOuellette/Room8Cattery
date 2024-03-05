@@ -1,14 +1,17 @@
 import os
 
 from flask import Flask, render_template, redirect, request, session, jsonify, g, flash, abort
+from flask_migrate import Migrate
 from datetime import datetime
 import stripe
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 from flask_debugtoolbar import DebugToolbarExtension
+from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 from flask_bcrypt import Bcrypt
+from flask_cors import CORS
 
 import requests
 import re
@@ -17,6 +20,7 @@ import random
 app = Flask(__name__)
 app.app_context().push()
 bcrypt = Bcrypt(app)
+CORS(app, resources={r"/api/*": {"origins": ["http://127.0.0.1:5173"]}})
 
 from secretkeys import MY_SECRET_KEY, STRIPE_API_KEY
 from models import connect_db, User, db, Cat, Volunteer, Donation
@@ -38,7 +42,8 @@ stripe.api_key = STRIPE_API_KEY
 DEFAULT_IMAGE_URL = "https://www.freeiconspng.com/uploads/cats-paw-icon-17.png" 
 
 connect_db(app)
-
+db.create_all()
+migrate = Migrate(app, db)
 ####################################################
 # Helper functions 
 
@@ -162,11 +167,12 @@ def home():
     
     featured_cats_data = [{
         'id': cat.id,
-        'name': cat.name,
+        'name': cat.cat_name,
         'age': cat.age,
+        'gender': cat.gender,
         'breed': cat.breed,
         'description': cat.description,
-        'image_url': cat.image_url
+        'image_url': cat.cat_image
     } for cat in featured_cats]
 
     return jsonify({
@@ -230,11 +236,12 @@ def create_charge():
 #Route to display list of adoptable cats
 @app.route('/api/cats/adoptable', methods=['GET'])
 def get_adoptable_cats():
-    adoptable_cats = Cat.query.filter_by(is_featured=True, adopted=False).all()
+    adoptable_cats = db.session.query(Cat).outerjoin(Adoption).filter(Cat.is_featured == True, or_(Adoption.adopted == False, Adoption.adopted == None)).all()
     cats_data = [{
         'id': cat.id,
         'name': cat.cat_name,
         'age': cat.age,
+        'gender': cat.gender,
         'breed': cat.breed,
         'description': cat.description,
         'image_url': cat.cat_image
@@ -250,6 +257,7 @@ def get_cat_details(cat_id):
         'id': cat.id,
         'name': cat.cat_name,
         'age': cat.age,
+        'gender': cat.gender,
         'breed': cat.breed,
         'description': cat.description,
         'special_needs': cat.special_needs,
@@ -271,6 +279,7 @@ def add_cat():
     new_cat = Cat(
         cat_name=data.get('cat_name'),
         age=data.get('age'),
+        gender = data.get('gender'),
         breed=data.get('breed'),
         description=data.get('description', ''),
         special_needs=data.get('special_needs', ''),
@@ -305,7 +314,8 @@ def update_cat_info(cat_id):
     data = request.json
    
     cat.cat_name = data.get('cat_name', cat.cat_name)
-    cat.age = data.get('age', cat.age)
+    cat.age = data.get('age', cat.age),
+    cat.gender = data.get('gender', cat.gender),
     cat.breed = data.get('breed', cat.breed)
     cat.description = data.get('description, cat.description')
     cat.special_needs = data.get('special_needs', cat.special_needs)
@@ -328,6 +338,25 @@ def delete_cat(cat_id):
     return jsonify({'message': 'Cat deleted successfully'}), 200
 
 
+@app.route('/api/cats/featured', methods=['GET'])
+def get_featured_cats():
+    """Endpoint for fetching featured cats."""
+    featured_cats = Cat.query.filter_by(is_featured=True).limit(4).all()  # Adjust the limit as needed
+    featured_cats_data = [
+        {
+            'id': cat.id,
+            'name': cat.name,
+            'age': cat.age,
+            'gender': cat.gender,
+            'breed': cat.breed,
+            'description': cat.description,
+            'image_url': cat.image_url if cat.image_url else DEFAULT_IMAGE_URL
+        } for cat in featured_cats
+    ]
+
+    return jsonify(featured_cats_data)
+
+
 ####################################################################################################################
 #exporting cat data to spreadsheets using Google SpreadSheets API
 
@@ -338,11 +367,11 @@ def export_cats_to_sheet():
 
     # Fetch cats data from your database
     cats = Cat.query.all()
-    values = [['ID', 'Name', 'Age', 'Breed', 'Description', 'Special Needs', 'Foster Name', 'Microchip']]  # Column headers
+    values = [['ID', 'Name', 'Age', 'Gender', 'Breed', 'Description', 'Special Needs', 'Foster Name', 'Microchip']]  # Column headers
     for cat in cats:
         # Utilizing the relationship between Cats and Fosters like cat.foster to get foster's name
         foster_name = cat.foster.first_name + ' ' + cat.foster.last_name if cat.foster else 'N/A'
-        values.append([cat.id, cat.cat_name, cat.age, cat.breed, cat.description, cat.special_needs, foster_name, cat.microchip])
+        values.append([cat.id, cat.cat_name, cat.age, cat.gender, cat.breed, cat.description, cat.special_needs, foster_name, cat.microchip])
 
     # Initialize Google Sheets API
     sheet = initialize_google_sheets()

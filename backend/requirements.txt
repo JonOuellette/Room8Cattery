@@ -12,6 +12,7 @@ exceptiongroup==1.2.0
 executing==2.0.1
 Flask==3.0.2
 Flask-Bcrypt==1.0.1
+Flask-Cors==4.0.0
 Flask-DebugToolbar==0.14.1
 flask-shell-ipython==0.5.1
 Flask-SQLAlchemy==3.1.1
@@ -40,6 +41,7 @@ prompt-toolkit==3.0.43
 protobuf==4.25.3
 psycopg==3.1.18
 psycopg-binary==3.1.18
+psycopg2-binary==2.9.9
 ptyprocess==0.7.0
 pure-eval==0.2.2
 pyasn1==0.5.1
