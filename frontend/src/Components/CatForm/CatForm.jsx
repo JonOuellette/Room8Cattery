@@ -4,14 +4,14 @@ import Room8Api from '../../api/api';
 function CatForm({ catId, setEditing, userRole }) {
     const [formData, setFormData] = useState({
         name: '',
-        age: '',
-        gender: '',
+        age: 0, 
+        gender: '', 
         breed: '',
         description: '',
         specialNeeds: '',
         microchip: '',
         image_url: '',
-        isFeatured: false,
+        isFeatured: false, 
     });
     const [errors, setErrors] = useState([]);
 
@@ -86,17 +86,23 @@ function CatForm({ catId, setEditing, userRole }) {
             <label htmlFor="age">Age:</label>
             <input type="number" id="age" name="age" value={formData.age} onChange={handleChange} required />
 
-            <label htmlFor="gender">Age:</label>
+            <label htmlFor="gender">Gender:</label>
             <input type="text" id="gender" name="gender" value={formData.gender} onChange={handleChange} required />
 
             <label htmlFor="breed">Breed:</label>
             <input type="text" id="breed" name="breed" value={formData.breed} onChange={handleChange} required />
 
-            <label htmlFor="breed">Breed:</label>
-            <input type="text" id="breed" name="breed" value={formData.breed} onChange={handleChange} required />
+            <label htmlFor="description">Description:</label>
+            <input type="text" id="description" name="description" value={formData.description} onChange={handleChange} required />
 
-            <label htmlFor="breed">Breed:</label>
-            <input type="text" id="breed" name="breed" value={formData.breed} onChange={handleChange} required />
+            <label htmlFor="special_needs">Special Needs:</label>
+            <input type="text" id="special_needs" name="special_needs" value={formData.special_needs} onChange={handleChange} required />
+
+            <label htmlFor="microchip">Microchip #:</label>
+            <input type="text" id="microchip" name="microchip" value={formData.microchip} onChange={handleChange} required />
+
+            <label htmlFor="cat_image">Cat Image URL:</label>
+            <input type="text" id="cat_image" name="cat_image" value={formData.cat_image} onChange={handleChange} required />
 
             {userRole === 'admin' && (
                 <>

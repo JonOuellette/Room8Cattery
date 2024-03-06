@@ -20,7 +20,8 @@ import random
 app = Flask(__name__)
 app.app_context().push()
 bcrypt = Bcrypt(app)
-CORS(app, resources={r"/api/*": {"origins": ["http://127.0.0.1:5173"]}})
+CORS(app, origins=["http://127.0.0.1:5173"], supports_credentials=True)
+
 
 from secretkeys import MY_SECRET_KEY, STRIPE_API_KEY
 from models import connect_db, User, db, Cat, Volunteer, Donation
@@ -236,7 +237,7 @@ def create_charge():
 #Route to display list of adoptable cats
 @app.route('/api/cats/adoptable', methods=['GET'])
 def get_adoptable_cats():
-    adoptable_cats = db.session.query(Cat).outerjoin(Adoption).filter(Cat.is_featured == True, or_(Adoption.adopted == False, Adoption.adopted == None)).all()
+    adoptable_cats = Cat.query.filter(Cat.adopted == False).all()
     cats_data = [{
         'id': cat.id,
         'name': cat.cat_name,
@@ -345,12 +346,12 @@ def get_featured_cats():
     featured_cats_data = [
         {
             'id': cat.id,
-            'name': cat.name,
+            'name': cat.cat_name,
             'age': cat.age,
             'gender': cat.gender,
             'breed': cat.breed,
             'description': cat.description,
-            'image_url': cat.image_url if cat.image_url else DEFAULT_IMAGE_URL
+            'cat_image': cat.cat_image if cat.cat_image else DEFAULT_IMAGE_URL
         } for cat in featured_cats
     ]
 
@@ -360,7 +361,7 @@ def get_featured_cats():
 ####################################################################################################################
 #exporting cat data to spreadsheets using Google SpreadSheets API
 
-@app.route('/export/cats')
+@app.route('/api/export/cats')
 def export_cats_to_sheet():
     spreadsheet_id = '1g3ZoPFgyB7uEeYFu446DlRj3ITIkKpy1SMgUNXPMrBI'  #Google Sheet ID
     range_name = 'Cats!A1'  
@@ -385,7 +386,7 @@ def export_cats_to_sheet():
     return jsonify({'updated_cells': result.get('updatedCells')})
 
 
-@app.route('/export/fosters')
+@app.route('/api/export/fosters')
 def export_fosters_to_sheet():
     spreadsheet_id = '12yvi-j8rOJoKeWdbyL_Z7AdBxaPs6Is4Hk6AGMOpK7k'  #Google Sheet Id
     range_name = 'Fosters!A1'  
@@ -411,7 +412,7 @@ def export_fosters_to_sheet():
 #####################################################################################################################
 # Volunteer form - allows users to submit form indicating interest in volunteering
 
-@app.route('/volunteer', methods=['POST'])
+@app.route('/api/volunteer', methods=['POST'])
 def volunteer():
     data = request.json  # Get data from POST request sent by React frontend
     form = VolunteerForm(meta={'csrf': False}, formdata=None, data=data)  # Disable CSRF for API usage

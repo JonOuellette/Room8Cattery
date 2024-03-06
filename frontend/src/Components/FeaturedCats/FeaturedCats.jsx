@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { Link } from 'react-router-dom';
+import Room8Api from '../../api/api';
 
 const FeaturedCats = () => {
     const [cats, setCats] = useState([]);
@@ -8,7 +9,7 @@ const FeaturedCats = () => {
         const fetchCats = async () => {
             try {
                 const cats = await Room8Api.getFeaturedCats();
-                console.log(fetchedCats);
+                console.log(cats);
                 setCats(cats);
             } catch (error) {
                 console.error('Error fetching featured cats:', error);

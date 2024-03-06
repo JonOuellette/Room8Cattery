@@ -1,14 +1,13 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
-import useLocalStorage from '../../hooks/useLocalStorage';
+import { UserContext } from '../UserContext'; // Import UserContext
 
 const Navbar = () => {
-    // Use the custom hook for authentication state
-    const [userToken, setUserToken] = useLocalStorage('userToken', null);
+    const { user, setUser } = useContext(UserContext); // Use UserContext
 
     const handleLogout = () => {
-        // Clear the user token to log out the user
-        setUserToken(null); // Clears the token from both state and localStorage
+        setUser(null); // Clears the user from context
+        localStorage.removeItem('userToken'); // Clears the token from localStorage
         window.location.reload(); // Reload the page to update the UI
     };
 
@@ -20,10 +19,10 @@ const Navbar = () => {
                 <li><Link to="/adopt">Adopt</Link></li>
                 <li><Link to="/contact">Contact</Link></li>
                 <li><Link to="/donate">Donate</Link></li>
-                {userToken ? (
-                    <li><button onClick={handleLogout}>Sign Out</button></li> // You can style this as needed
+                {user ? (
+                    <li><button onClick={handleLogout}>Sign Out</button></li>
                 ) : (
-                    <li><Link to="/signin">Foster Sign In</Link></li>
+                    <li><Link to="/login">Foster Sign In</Link></li>
                 )}
             </ul>
         </nav>

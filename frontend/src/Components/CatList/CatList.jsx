@@ -1,40 +1,47 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import Room8Api from '../../api/api';
-import CatDetails from '../CatDetails/CatDetails';
+import { UserContext } from '../UserContext';
 
 function CatList() {
     const [cats, setCats] = useState([]);
     const [error, setError] = useState(null);
+    const { user } = useContext(UserContext);
 
-    // Fetch adoptable cats from the API
+    console.log(user)
+
     useEffect(() => {
         async function getCats() {
             try {
                 const fetchedCats = await Room8Api.getAdoptableCats();
                 setCats(fetchedCats);
-                setError(null); // Clear error if the request is successful
+                setError(null);
             } catch (err) {
                 console.error("Failed to fetch cats", err);
-                setError("Failed to fetch cats. Please try again later."); // Set error message
+                setError("Failed to fetch cats. Please try again later.");
             }
         }
 
         getCats();
-    }, []); // Empty dependency array means this effect runs once after initial render
+    }, []);
 
     return (
         <div>
             <h2>Adoptable Cats</h2>
-            {error && <div className="alert alert-danger">{error}</div>} {/* Display error message if error exists */}
+            {user.user && (user.user.is_admin || user.user.is_foster) && (
+                <Link to="/add-cat" className="btn btn-primary">Add Cat</Link>
+            )}
+            {error && <div className="alert alert-danger">{error}</div>}
             <div className="cat-list">
-                {cats.length ? (
-                    cats.map(cat => (
-                        <div key={cat.id}>
-                            <Link to={`/cats/${cat.id}`}>View {cat.name}</Link> 
-                        </div>
-                    ))
-                ) : (
+                {cats.length ? cats.map(cat => (
+                    <div key={cat.id} className="cat-card">
+                        <Link to={`/cats/${cat.id}`}>
+                            <img src={cat.image_url} alt={cat.name} />
+                            <h3>{cat.name}</h3>
+                        </Link>
+                        <p>{cat.description}</p>
+                    </div>
+                )) : (
                     <p>No cats available for adoption right now.</p>
                 )}
             </div>
