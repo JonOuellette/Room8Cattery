@@ -5,11 +5,8 @@ import Room8Api from '../../api/api';
 
 function Login() {
     const navigate = useNavigate();
-    const { setUser } = useContext(UserContext);
-    const [formData, setFormData] = useState({
-        username: '',
-        password: ''
-    });
+    const { setUser, setToken } = useContext(UserContext); 
+    const [formData, setFormData] = useState({ username: '', password: '' });
     const [error, setError] = useState('');
 
     const handleChange = (e) => {
@@ -23,11 +20,17 @@ function Login() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const user = await Room8Api.login(formData);
-            setUser(user);
-            navigate('/'); // Redirect to home page after login
+            const res = await Room8Api.login(formData);
+            if (res.access_token) {  // Ensure you're using the correct key for the token based on your backend response
+                setUser(res.user);
+                setToken(res.access_token);  // Saving token to context and local storage if necessary
+                Room8Api.setToken(res.access_token);  // Setting token for future requests
+                navigate('/');
+            } else {
+                throw new Error('No token received');
+            }
         } catch (err) {
-            setError(err.message);
+            setError(err.message || 'Failed to login');
         }
     };
 

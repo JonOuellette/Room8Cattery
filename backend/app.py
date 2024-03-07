@@ -2,11 +2,12 @@ import os
 
 from flask import Flask, render_template, redirect, request, session, jsonify, g, flash, abort
 from flask_migrate import Migrate
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from datetime import datetime
 import stripe
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
-from flask_debugtoolbar import DebugToolbarExtension
+# from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
@@ -21,10 +22,13 @@ app = Flask(__name__)
 app.app_context().push()
 bcrypt = Bcrypt(app)
 CORS(app, origins=["http://127.0.0.1:5173"], supports_credentials=True)
+jwt = JWTManager(app)
 
 
 from secretkeys import MY_SECRET_KEY, STRIPE_API_KEY
 from models import connect_db, User, db, Cat, Volunteer, Donation
+from secretkeys import MY_SECRET_KEY, MY_JWT_SECRET_KEY
+from models import connect_db, User, db, Cat, Volunteer, Donation, Admin, Foster, Adoption
 from forms import RegisterForm, LoginForm, AddCatForm, VolunteerForm
 
 CURR_USER_KEY = "curr_user"
@@ -36,7 +40,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', MY_SECRET_KEY)
-toolbar = DebugToolbarExtension(app)
+app.config['JWT_SECRET_KEY'] = MY_JWT_SECRET_KEY
+# toolbar = DebugToolbarExtension(app)
 
 stripe.api_key = STRIPE_API_KEY
 
@@ -45,6 +50,8 @@ DEFAULT_IMAGE_URL = "https://www.freeiconspng.com/uploads/cats-paw-icon-17.png"
 connect_db(app)
 db.create_all()
 migrate = Migrate(app, db)
+
+jwt = JWTManager(app)
 ####################################################
 # Helper functions 
 
@@ -52,8 +59,8 @@ migrate = Migrate(app, db)
 def is_admin():
     return g.user and g.user.is_admin
 
-def is_foster_or_admin():
-    return g.user and (g.user.is_foster or g.user.is_admin)
+def is_foster_or_admin(current_user = None):
+    return (g.user and (g.user.is_foster or g.user.is_admin)) or (current_user and (current_user["is_foster"] or current_user["is_admin"]))
 
 
 # Google Sheets initialization:
@@ -135,22 +142,31 @@ def create_user():
         return jsonify({'error': 'This username or email is already used'}), 400
 
 
-@app.route('/login', methods=["POST"])
+@app.route('/login', methods=['POST'])
 def login():
-    """Handles user login"""
-    data = request.json  # Get data from POST request
+    data = request.json
     username = data.get('username')
     password = data.get('password')
-
+    
     user = User.authenticate(username, password)
-
-    if user and (user.is_foster or user.is_admin):
-        user_login(user)  # Assuming this sets some kind of session or token
-        return jsonify({"message": f"Hello {user.username}!", "user": {"id": user.id, "username": user.username, "is_admin": user.is_admin, "is_foster": user.is_foster}}), 200
+    
+    if user:
+        # It's better to use a unique identifier for the identity
+        access_token = create_access_token(identity={"id": user.id, 
+                "username": user.username, 
+                "is_admin": user.is_admin, 
+                "is_foster": user.is_foster })
+        return jsonify({
+            "access_token": access_token, 
+            "user": {
+                "id": user.id, 
+                "username": user.username, 
+                "is_admin": user.is_admin, 
+                "is_foster": user.is_foster
+            }
+        }), 200
     else:
-        return jsonify({"error": "Invalid credentials or unauthorized access"}), 401
-
-
+        return jsonify({"msg": "Invalid username or password"}), 401
 
 @app.route('/logout', methods=["POST"])
 def logout():
@@ -183,6 +199,20 @@ def home():
 
 ##############################################################################################################
 
+@app.route('/api/users/me', methods=['GET'])
+@jwt_required()
+def get_current_user_details():
+    user_id = get_jwt_identity()['id']
+    user = User.query.get_or_404(user_id)
+    return jsonify({
+        'id': user.id,
+        'username': user.username,
+        'email': user.email,
+        'is_admin': user.is_admin,
+        'is_foster': user.is_foster
+    })
+
+
 @app.route('/api/users/<int:user_id>/update', methods=['PATCH'])
 def update_user_info(user_id):
     # Ensure the logged-in user is the same as the one whose information is being updated
@@ -203,6 +233,8 @@ def update_user_info(user_id):
     
     db.session.commit()
     return jsonify({'message': 'User information updated successfully'}), 200
+
+
 
 
 ##############################################################################################################
@@ -270,9 +302,12 @@ def get_cat_details(cat_id):
 
 # Route for either Fosters or Admins to add cats to the Adoptable list
 @app.route('/api/cats', methods=['POST'])
+@jwt_required()
 def add_cat():
+    current_user = get_jwt_identity()
+    
     # Vefify  direct role and ID checks with is_foster_or_admin()
-    if not is_foster_or_admin():
+    if not is_foster_or_admin(current_user):
         return jsonify({'error': 'Unauthorized'}), 403
 
     # adding new cat
@@ -287,8 +322,10 @@ def add_cat():
         cat_image=data.get('cat_image', DEFAULT_IMAGE_URL),
         microchip = data.get('microchip'),
         is_featured=data.get('is_featured', False),
-        foster_id=g.user.id  
+        adopted=False
+        # foster_id=current_user["id"] 
     )
+    print(new_cat, "THIS IS THE NEW CAT!!!!!!!!!!!!!!!!!!!!!!!!!!")
     db.session.add(new_cat)
     db.session.commit()
 

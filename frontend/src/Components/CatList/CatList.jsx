@@ -28,7 +28,7 @@ function CatList() {
     return (
         <div>
             <h2>Adoptable Cats</h2>
-            {user.user && (user.user.is_admin || user.user.is_foster) && (
+            {user && (user.is_admin || user.is_foster) && (
                 <Link to="/add-cat" className="btn btn-primary">Add Cat</Link>
             )}
             {error && <div className="alert alert-danger">{error}</div>}

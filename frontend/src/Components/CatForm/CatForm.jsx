@@ -3,14 +3,14 @@ import Room8Api from '../../api/api';
 
 function CatForm({ catId, setEditing, userRole }) {
     const [formData, setFormData] = useState({
-        name: '',
+        cat_name: '',
         age: 0, 
         gender: '', 
         breed: '',
         description: '',
         specialNeeds: '',
         microchip: '',
-        image_url: '',
+        cat_image: '',
         isFeatured: false, 
     });
     const [errors, setErrors] = useState([]);
@@ -20,24 +20,26 @@ function CatForm({ catId, setEditing, userRole }) {
             if (catId) {
                 const catData = await Room8Api.getCatDetails(catId);
                 setFormData({
-                    name: catData.name,
+                    cat_name: catData.cat_name,
                     age: catData.age,
                     gender: catData.gender,
                     breed: catData.breed,
                     description: catData.description,
-                    specialNeeds: catData.special_needs,
+                    specialNeeds: catData.special_needs || '',
                     microchip: catData.microchip,
-                    image_url: catData.image_url,
+                    cat_image: catData.cat_image,
                     isFeatured: catData.is_featured,
                 });
+                
             }
         };
+        
         fetchCat();
     }, [catId]);
 
     const validateForm = () => {
         const newErrors = [];
-        if (!formData.name) newErrors.push("Name is required.");
+        if (!formData.cat_name) newErrors.push("Name is required.");
         if (!formData.age) newErrors.push("Age is required.");
         if (!formData.breed) newErrors.push("Breed is required.");
         return newErrors;
@@ -65,10 +67,24 @@ function CatForm({ catId, setEditing, userRole }) {
                     is_featured: userRole === 'admin' ? formData.isFeatured : false,  
                 });
             } else {
-                await Room8Api.addNewCat({
+                const addedCat = await Room8Api.addCat({
                     ...formData,
                     is_featured: userRole === 'admin' ? formData.isFeatured : false,
                 });
+                // Reset the form fields after successfully adding a cat
+                setFormData({
+                    cat_name: '',
+                    age: 0, 
+                    gender: '', 
+                    breed: '',
+                    description: '',
+                    specialNeeds: '',
+                    microchip: '',
+                    cat_image: '',
+                    isFeatured: false,
+                });
+                // Display a message that the cat has been added
+                alert(`${addedCat.cat_name || 'The cat'} has been added`);
             }
             setEditing && setEditing(false); // If editing, close the form after submit
         } catch (err) {
@@ -76,12 +92,13 @@ function CatForm({ catId, setEditing, userRole }) {
             setErrors([...errors, err.message || "Unknown error"]);
         }
     };
+    
 
     return (
         <form onSubmit={handleSubmit}>
             {errors.map((error, idx) => <p key={idx} className="error">{error}</p>)}
-            <label htmlFor="name">Name:</label>
-            <input type="text" id="name" name="name" value={formData.name} onChange={handleChange} required />
+            <label htmlFor="cat_name">Name:</label>
+            <input type="text" id="cat_name" name="cat_name" value={formData.cat_name} onChange={handleChange} required />
 
             <label htmlFor="age">Age:</label>
             <input type="number" id="age" name="age" value={formData.age} onChange={handleChange} required />
@@ -95,8 +112,8 @@ function CatForm({ catId, setEditing, userRole }) {
             <label htmlFor="description">Description:</label>
             <input type="text" id="description" name="description" value={formData.description} onChange={handleChange} required />
 
-            <label htmlFor="special_needs">Special Needs:</label>
-            <input type="text" id="special_needs" name="special_needs" value={formData.special_needs} onChange={handleChange} required />
+            <label htmlFor="specialNeeds">Special Needs:</label>
+            <input type="text" id="specialNeeds" name="specialNeeds" value={formData.special_needs} onChange={handleChange} required />
 
             <label htmlFor="microchip">Microchip #:</label>
             <input type="text" id="microchip" name="microchip" value={formData.microchip} onChange={handleChange} required />
