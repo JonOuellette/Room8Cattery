@@ -1,5 +1,5 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
-import Room8Api from '../api/api';
+// import React, { createContext, useState, useContext, useEffect } from 'react';
+// import Room8Api from '../api/api';
 
 // // Create Context
 // export const UserContext = createContext();
@@ -40,7 +40,55 @@ import Room8Api from '../api/api';
 // // Custom hook for using context
 // export const useUser = () => useContext(UserContext);
 
+//##################################################################################//
 
+// export const UserContext = createContext();
+
+// export const UserProvider = ({ children }) => {
+//     const [user, setUser] = useState(null);
+//     const storedToken = localStorage.getItem("token"); // Get token from localStorage at the start
+//     const [token, setInternalToken] = useState(storedToken);
+
+//     useEffect(() => {
+//         fetchUserDetails();
+//     }, [token]); // React to changes in token
+
+//     const fetchUserDetails = async () => {
+//         if (token) {
+//             Room8Api.setToken(token);
+//             try {
+//                 const userDetails = await Room8Api.getUserDetails();
+//                 setUser(userDetails);
+//             } catch (error) {
+//                 console.error("Error fetching user details:", error);
+//                 setUser(null);
+//                 setInternalToken(null);
+//                 localStorage.removeItem('token');
+//             }
+//         } else {
+//             setUser(null); // Ensure user is null if there's no token
+//             Room8Api.setToken(null); // Clear API token
+//         }
+//     };
+
+//     const setToken = (newToken) => {
+//         localStorage.setItem("token", newToken);
+//         setInternalToken(newToken); // Update internal state to trigger useEffect
+//     };
+
+//     return (
+//         <UserContext.Provider value={{ user, setUser, token, setToken }}>
+//             {children}
+//         </UserContext.Provider>
+//     );
+// };
+
+// export const useUser = () => useContext(UserContext);
+
+
+//########################################################################//
+import React, { createContext, useState, useContext, useEffect } from 'react';
+import Room8Api from '../api/api'; // Adjust the path as necessary
 
 export const UserContext = createContext();
 
@@ -49,10 +97,7 @@ export const UserProvider = ({ children }) => {
     const storedToken = localStorage.getItem("token"); // Get token from localStorage at the start
     const [token, setInternalToken] = useState(storedToken);
 
-    useEffect(() => {
-        fetchUserDetails();
-    }, [token]); // React to changes in token
-
+    // Define fetchUserDetails outside useEffect but inside UserProvider
     const fetchUserDetails = async () => {
         if (token) {
             Room8Api.setToken(token);
@@ -62,7 +107,7 @@ export const UserProvider = ({ children }) => {
             } catch (error) {
                 console.error("Error fetching user details:", error);
                 setUser(null);
-                setInternalToken(null);
+                setInternalToken(null); // Also update state to reflect token removal
                 localStorage.removeItem('token');
             }
         } else {
@@ -71,9 +116,14 @@ export const UserProvider = ({ children }) => {
         }
     };
 
+    useEffect(() => {
+        fetchUserDetails();
+    }, [token]); // React to changes in token
+
     const setToken = (newToken) => {
         localStorage.setItem("token", newToken);
         setInternalToken(newToken); // Update internal state to trigger useEffect
+        fetchUserDetails();  // Now this should work as fetchUserDetails is defined in the right scope
     };
 
     return (
@@ -84,5 +134,3 @@ export const UserProvider = ({ children }) => {
 };
 
 export const useUser = () => useContext(UserContext);
-
-

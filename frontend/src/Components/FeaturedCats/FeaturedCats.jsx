@@ -24,7 +24,7 @@ const FeaturedCats = () => {
             {cats.map(cat => (
                 <div key={cat.id} className="cat-card">
                     <Link to={`/cats/${cat.id}`}>
-                        <img src={cat.image_url} alt={cat.name} />
+                        <img src={cat.cat_image} alt={cat.name} />
                         <h3>{cat.name}</h3>
                         <p>{cat.description}</p>
                     </Link>

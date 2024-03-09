@@ -9,14 +9,17 @@ class Room8Api {
 
     //Method to set the token
     static setToken(token) {
-        Room8Api.token = token;
-        // Store token in local storage to maintain authentication status across sessions
-        localStorage.setItem('token', token);
+        this.token = token; // Updated to use 'this' to ensure we're setting the token on the correct instance.
+        localStorage.setItem('token', token); // Store token in local storage to maintain authentication status across sessions
     }
 
     static async request(endpoint, data = {}, method = 'get') {
         console.debug('API Call:', endpoint, data, method);
-        const headers = { Authorization: `Bearer ${Room8Api.token}` }; // Use token for authentication in API calls
+        // Ensure headers are correctly set for all API calls
+        const headers = { 
+            'Content-Type': 'application/json', // Ensures that the server treats the sent data as JSON.
+            Authorization: `Bearer ${this.token}` // Updated to use 'this' to correctly reference the token stored in this class.
+        };
         const url = `${BASE_URL}/${endpoint}`;
         const params = method === 'get' ? data : {};
 
@@ -24,7 +27,8 @@ class Room8Api {
             return (await axios({ url, method, data, params, headers })).data;
         } catch (err) {
             console.error('API Error:', err.response);
-            throw new Error(err.response?.data?.error?.message || 'Unknown API error');
+            let message = err.response?.data?.error?.message || 'Unknown API error';
+            throw new Error(message, { cause: err });
         }
     }
 
@@ -81,6 +85,10 @@ class Room8Api {
 
     static async getFeaturedCats() {
         return this.request('api/cats/featured');
+    }
+
+    static async toggleCatFeatured(catId) {
+        return this.request(`api/cats/${catId}/feature`, {}, 'patch');
     }
 
     // Donation API calls

@@ -31,3 +31,6 @@ const AppRoutes = () => {
 };
 
 export default AppRoutes;
+
+
+{/* <Route path="/edit-cat/:catId" element={<PrivateRoute><CatForm setEditing={true} /></PrivateRoute>} /> */}

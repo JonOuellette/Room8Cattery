@@ -1,17 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import Room8Api from '../../api/api';
+import { useParams, useNavigate } from 'react-router-dom';
 
-function CatForm({ catId, setEditing, userRole }) {
+function CatForm({ setEditing, userRole }) {
+    const { catId } = useParams()
+    const navigate = useNavigate();
+    console.log(catId)
     const [formData, setFormData] = useState({
         cat_name: '',
-        age: 0, 
-        gender: '', 
+        age: 0,
+        gender: '',
         breed: '',
         description: '',
         specialNeeds: '',
         microchip: '',
         cat_image: '',
-        isFeatured: false, 
+        isFeatured: false,
     });
     const [errors, setErrors] = useState([]);
 
@@ -19,8 +23,9 @@ function CatForm({ catId, setEditing, userRole }) {
         const fetchCat = async () => {
             if (catId) {
                 const catData = await Room8Api.getCatDetails(catId);
+                console.log(catData)
                 setFormData({
-                    cat_name: catData.cat_name,
+                    cat_name: catData.name,
                     age: catData.age,
                     gender: catData.gender,
                     breed: catData.breed,
@@ -30,10 +35,10 @@ function CatForm({ catId, setEditing, userRole }) {
                     cat_image: catData.cat_image,
                     isFeatured: catData.is_featured,
                 });
-                
+
             }
         };
-        
+
         fetchCat();
     }, [catId]);
 
@@ -55,17 +60,22 @@ function CatForm({ catId, setEditing, userRole }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const newErrors = validateForm();
+        const newErrors = validateForm(); alert(`${formData.cat_name} has been updated successfully.`);
+        // Redirect user back to the cat details page
+        navigate(`/cats/${catId}`);
         if (newErrors.length > 0) {
             setErrors(newErrors);
             return;
         }
         try {
             if (catId) {
-                await Room8Api.updateCatInfo(catId, {
+                await Room8Api.updateCat(catId, {
                     ...formData,
-                    is_featured: userRole === 'admin' ? formData.isFeatured : false,  
+                    is_featured: userRole === 'admin' ? formData.isFeatured : false,
                 });
+                
+                // Redirect user back to the cat details page
+                navigate(`/cats/${catId}`);
             } else {
                 const addedCat = await Room8Api.addCat({
                     ...formData,
@@ -74,8 +84,8 @@ function CatForm({ catId, setEditing, userRole }) {
                 // Reset the form fields after successfully adding a cat
                 setFormData({
                     cat_name: '',
-                    age: 0, 
-                    gender: '', 
+                    age: 0,
+                    gender: '',
                     breed: '',
                     description: '',
                     specialNeeds: '',
@@ -92,7 +102,7 @@ function CatForm({ catId, setEditing, userRole }) {
             setErrors([...errors, err.message || "Unknown error"]);
         }
     };
-    
+
 
     return (
         <form onSubmit={handleSubmit}>

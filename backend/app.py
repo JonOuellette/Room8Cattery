@@ -28,8 +28,8 @@ jwt = JWTManager(app)
 from secretkeys import MY_SECRET_KEY, STRIPE_API_KEY
 from models import connect_db, User, db, Cat, Volunteer, Donation
 from secretkeys import MY_SECRET_KEY, MY_JWT_SECRET_KEY
-from models import connect_db, User, db, Cat, Volunteer, Donation, Admin, Foster, Adoption
-from forms import RegisterForm, LoginForm, AddCatForm, VolunteerForm
+from models import connect_db, User, db, Cat, Volunteer, Donation, Adoption
+from forms import VolunteerForm
 
 CURR_USER_KEY = "curr_user"
 
@@ -56,8 +56,8 @@ jwt = JWTManager(app)
 # Helper functions 
 
 #Helper function for role checks
-def is_admin():
-    return g.user and g.user.is_admin
+def is_admin(current_user = None):
+    return (g.user and ( g.user.is_admin)) or (current_user and ( current_user["is_admin"]))
 
 def is_foster_or_admin(current_user = None):
     return (g.user and (g.user.is_foster or g.user.is_admin)) or (current_user and (current_user["is_foster"] or current_user["is_admin"]))
@@ -98,24 +98,33 @@ def user_logout():
  
 
 @app.route('/admin/create-user', methods=['POST'])
+@jwt_required()
 def create_user():
-    if not is_admin():
-        return jsonify({'error': 'Unauthorized'}), 403
+    # Extract the current user's ID from the JWT payload
+    current_user_id = get_jwt_identity()['id']
+    # Fetch the user record from the database
+    current_user = User.query.get(current_user_id)
 
+    # Ensure the current user exists and has admin privileges
+    if not current_user or not current_user.is_admin:
+        return jsonify({'error': 'Unauthorized, admin access required'}), 403
+
+    # Extract data from the request payload
     data = request.json
     username = data.get('username')
     email = data.get('email')
     password = data.get('password')
     first_name = data.get('first_name')
     last_name = data.get('last_name')
+    phone_number = data.get('phone_number')
     is_foster = data.get('is_foster', False)
+    is_admin = data.get('is_admin', False)  
 
     # Validate user inputs
     if not all([username, email, password, first_name, last_name]) or not re.match("[^@]+@[^@]+\.[^@]+", email):
         return jsonify({'error': 'Invalid input'}), 400
 
-    # Additional password strength validation can be added here
-
+    # Create the user
     try:
         new_user = User.signup(
             username=username,
@@ -123,7 +132,9 @@ def create_user():
             password=password,
             first_name=first_name,
             last_name=last_name,
-            is_foster=is_foster
+            phone_number=phone_number,
+            is_foster=is_foster,
+            is_admin=is_admin  
         )
         db.session.commit()
         return jsonify({
@@ -134,13 +145,13 @@ def create_user():
                 'email': new_user.email,
                 'first_name': new_user.first_name,
                 'last_name': new_user.last_name,
-                'is_foster': new_user.is_foster
+                'is_foster': new_user.is_foster,
+                'is_admin': new_user.is_admin 
             }
         }), 201
     except IntegrityError:
         db.session.rollback()
         return jsonify({'error': 'This username or email is already used'}), 400
-
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -294,6 +305,7 @@ def get_cat_details(cat_id):
         'breed': cat.breed,
         'description': cat.description,
         'special_needs': cat.special_needs,
+        "microchip": cat.microchip,
         'cat_image': cat.cat_image,
         'is_featured': cat.is_featured
         
@@ -334,8 +346,10 @@ def add_cat():
 
 ### Only admins can update if Cat isAdopted
 @app.route('/api/cats/<int:cat_id>/adopt', methods=['PATCH'])
+@jwt_required()
 def update_cat_adoption(cat_id):
-    if not is_admin():
+    current_user = get_jwt_identity()
+    if not is_admin(current_user):
         return jsonify({'error': 'Unauthorized'}), 403
 
     cat = Cat.query.get_or_404(cat_id)
@@ -345,31 +359,47 @@ def update_cat_adoption(cat_id):
     return jsonify({'message': 'Cat adoption status updated'}), 200
 
 @app.route('/api/cats/<int:cat_id>', methods=['PATCH'])
+@jwt_required()  # Require authentication for this route
 def update_cat_info(cat_id):
-    if not is_foster_or_admin():
-        return jsonify({'error': 'Unauthorized'}), 403
+    # Get the identity of the currently logged in user from the JWT
+    jwt_claims = get_jwt_identity()
+    current_user_id = jwt_claims['id']
+    current_user = User.query.get_or_404(current_user_id)
     cat = Cat.query.get_or_404(cat_id)
     data = request.json
-   
+
+    # Check if the current user is the foster of the cat or an admin
+    if not (current_user.id == cat.foster_id or current_user.is_admin):
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    # Update cat information
     cat.cat_name = data.get('cat_name', cat.cat_name)
-    cat.age = data.get('age', cat.age),
-    cat.gender = data.get('gender', cat.gender),
+    cat.age = data.get('age', cat.age)
+    cat.gender = data.get('gender', cat.gender)
     cat.breed = data.get('breed', cat.breed)
-    cat.description = data.get('description, cat.description')
+    cat.description = data.get('description', cat.description)
     cat.special_needs = data.get('special_needs', cat.special_needs)
     cat.microchip = data.get('microchip', cat.microchip)
     cat.cat_image = data.get('cat_image', cat.cat_image)
-    
+
+    # Only allow admins to change the cat's foster
     if is_admin():
-        cat.foster_id = data.get('foster_id', cat.foster_id)
+        cat.is_featured = data.get('is_featured', cat.is_featured)
+        cat.adopted = data.get('adopted', cat.adopted)  # Admin can set the cat as adopted
+        cat.foster_id = data.get('foster_id', cat.foster_id)  # Admin can reassign the foster
 
     db.session.commit()
     return jsonify({'message': 'Cat updated successfully'}), 200
 
 @app.route('/api/cats/<int:cat_id>', methods=['DELETE'])
+@jwt_required()  # Ensure the user is logged in
 def delete_cat(cat_id):
-    if not is_admin():
+    current_user = get_jwt_identity()
+    
+    # Only allow admins to delete cats
+    if not is_admin(current_user):
         return jsonify({'error': 'Unauthorized'}), 403
+    
     cat = Cat.query.get_or_404(cat_id)
     db.session.delete(cat)
     db.session.commit()
@@ -394,6 +424,27 @@ def get_featured_cats():
 
     return jsonify(featured_cats_data)
 
+
+@app.route('/api/cats/<int:cat_id>/feature', methods=['PATCH'])
+@jwt_required()
+def toggle_cat_featured(cat_id):
+    # Verify if the user is an admin
+    
+    current_user = get_jwt_identity()
+    if not is_admin(current_user):
+        return jsonify({'error': 'Unauthorized, admin access required'}), 403
+    
+    # Get the cat by ID
+    cat = Cat.query.get_or_404(cat_id)
+    
+    # Toggle the 'is_featured' attribute
+    cat.is_featured = not cat.is_featured
+    db.session.commit()
+    
+    return jsonify({
+        'id': cat.id,
+        'is_featured': cat.is_featured
+    }), 200
 
 ####################################################################################################################
 #exporting cat data to spreadsheets using Google SpreadSheets API

@@ -7,14 +7,19 @@ function CatList() {
     const [cats, setCats] = useState([]);
     const [error, setError] = useState(null);
     const { user } = useContext(UserContext);
+    const [refreshKey, setRefreshKey] = useState(0)
 
     console.log(user)
+
+    const refreshCats = () => {
+        setRefreshKey(Key => Key + 1); // This will trigger the useEffect to run again
+    };
 
     useEffect(() => {
         async function getCats() {
             try {
                 const fetchedCats = await Room8Api.getAdoptableCats();
-                setCats(fetchedCats);
+                setCats(fetchedCats.filter(cat => !cat.adopted));
                 setError(null);
             } catch (err) {
                 console.error("Failed to fetch cats", err);
@@ -23,7 +28,9 @@ function CatList() {
         }
 
         getCats();
-    }, []);
+    }, [refreshKey]);
+
+    
 
     return (
         <div>

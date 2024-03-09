@@ -6,46 +6,49 @@ bcrypt = Bcrypt()
 
 DEFAULT_IMAGE_URL = "https://www.freeiconspng.com/uploads/cats-paw-icon-17.png" 
 
-class Foster(db.Model):
-    __tablename__ = "fosters"
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"), nullable=False)
-    cat_id = db.Column(db.Integer, db.ForeignKey('cats.id', ondelete="CASCADE"), nullable=False)
+# class Foster(db.Model):
+#     __tablename__ = "fosters"
+#     id = db.Column(db.Integer, primary_key=True)
+#     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"), nullable=False)
+#     cat_id = db.Column(db.Integer, db.ForeignKey('cats.id', ondelete="CASCADE"), nullable=False)
     
 
 
 class User(db.Model):
     __tablename__ = "users"
-
+    # This user model now can serve both as admin and foster
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(15), nullable=False, unique=True)
     email = db.Column(db.String(40), nullable=False, unique=True)
+    password = db.Column(db.String(255), nullable=False)
     first_name = db.Column(db.String(25), nullable=False)
     last_name = db.Column(db.String(25), nullable=False)
-    password = db.Column(db.String(255), nullable=False)
     phone_number = db.Column(db.Integer)
     is_admin = db.Column(db.Boolean, default=False)
     is_foster = db.Column(db.Boolean, default=False)
 
-    fostered_cats = db.relationship('Foster', backref='foster', lazy='dynamic')
+    fostered_cats = db.relationship('Cat', backref='foster_user', lazy='dynamic')
 
     def __repr__(self):
         return f"<User #{self.id}: {self.username}, {self.email}>"
 
     @classmethod
-    def signup(cls, username, email, password, first_name, last_name):
+    def signup(cls, username, email, password, first_name, last_name, phone_number, is_admin=False, is_foster=False):
+        hashed_pwd = bcrypt.generate_password_hash(password).decode('UTF-8')
         """Sign up user.
 
         Hashes password and adds user to system.
         """
-        hashed_pwd = bcrypt.generate_password_hash(password).decode('UTF-8')
-
+        
         user = User(
             username=username,
             email=email,
             password=hashed_pwd,
             first_name=first_name,
-            last_name=last_name
+            last_name=last_name,
+            phone_number=phone_number,
+            is_admin=is_admin,
+            is_foster=is_foster
         )
 
         db.session.add(user)
@@ -65,14 +68,15 @@ class User(db.Model):
 
         if user and bcrypt.check_password_hash(user.password, password):
             return user
-        return False
+        else:
+            return False
 
 
-class Admin(db.Model):
-    __tablename__ = "admins"
+# class Admin(db.Model):
+#     __tablename__ = "admins"
 
-    id = db.Column(db.Integer, primary_key = True)
-    user_id = db.Column (db.Integer, db.ForeignKey('users.id'))
+#     id = db.Column(db.Integer, primary_key = True)
+#     user_id = db.Column (db.Integer, db.ForeignKey('users.id'))
     
 class Cat(db.Model):
     __tablename__ = "cats"
@@ -88,8 +92,9 @@ class Cat(db.Model):
     cat_image = db.Column(db.Text, nullable=False, default=DEFAULT_IMAGE_URL)
     is_featured = db.Column(db.Boolean, default=False, nullable=False)
     adopted = db.Column(db.Boolean, default=False, nullable=False)
+    foster_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
-    fosters = db.relationship('Foster', backref='cat', lazy='dynamic')
+    foster = db.relationship('User', backref=db.backref('cats_fostered', lazy='dynamic'))
 
 class Adoption(db.Model):
     __tablename__ = "adoptions"
