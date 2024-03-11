@@ -54,15 +54,30 @@ class Room8Api {
         return this.request(`api/users/${userId}`, {}, 'get');
     }
     
-
-    static async getFosterCats(fosterId) {
-        return this.request(`api/fosters/${fosterId}/cats`);
-    }
-
     static async changeUserPassword(userId, oldPassword, newPassword) {
         return this.request(`api/users/${userId}/password`, { old_password: oldPassword, new_password: newPassword }, 'patch');
     }
+       
+    static async createUser(data) {
+        return this.request('api/users/create', data, 'post');
+    }
 
+    static async updateUser(userId, data) {
+        return this.request(`/api/users/${userId}/update`, data, 'patch');
+    }
+
+    static async setUserFoster(userId) {
+        return this.request(`api/users/${userId}/set-foster`, {}, 'patch');
+    }
+
+    static async getFosters(userId) {
+        return this.request('api/fosters', {}, 'get');
+    }
+
+    static async deleteUser(userId) {
+        return this.request(`api/users/${userId}`, {}, 'delete');
+    }
+    
     // Cat API calls
     static async getAdoptableCats() {
         return this.request('api/cats/adoptable');
@@ -96,6 +111,9 @@ class Room8Api {
         return this.request(`api/cats/${catId}/feature`, {}, 'patch');
     }
 
+    static async getFosterCats(fosterId) {
+        return this.request(`api/fosters/${fosterId}/cats`);
+    }
     // Donation API calls
     static async createCharge(data) {
         return this.request('create-charge', data, 'post');
@@ -115,22 +133,7 @@ class Room8Api {
         return this.request('export/fosters');
     }
 
-    // User management API calls
-    static async createUser(data) {
-        return this.request('api/users', data, 'post');
-    }
-
-    static async updateUser(userId, data) {
-        return this.request(`/api/users/${userId}/update`, data, 'patch');
-    }
-
-    static async setUserFoster(userId) {
-        return this.request(`api/users/${userId}/set-foster`, {}, 'patch');
-    }
-
-    static async getFosters() {
-        return this.request('api/fosters', {}, 'get');
-    }
+ 
 
 }
 

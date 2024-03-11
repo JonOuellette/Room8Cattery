@@ -167,6 +167,19 @@ function FosterDashboard() {
 
     ReactModal.setAppElement('#root');
 
+    const handleDeleteFoster = async () => {
+        if (window.confirm("Are you sure you want to delete this foster? This cannot be undone.")) {
+            try {
+                await Room8Api.deleteUser(fosterId); // Make sure this matches your API method for deleting a user
+                navigate('/admin-dashboard'); // Redirect Admin back to the dashboard or another appropriate page
+                alert('Foster has been successfully deleted.');
+            } catch (err) {
+                console.error("Error deleting foster:", err);
+                alert('Failed to delete the foster. They might still have fostered cats.');
+            }
+        }
+    };
+
     useEffect(() => {
         setLoading(true);
 
@@ -227,7 +240,10 @@ function FosterDashboard() {
                 <p>Email: {fosterDetails.email}</p>
                 <p>Phone: {fosterDetails.phone_number}</p>
                 {user.is_admin && (
-                    <button onClick={() => setIsEditing(true)}>Edit Foster Profile</button>
+                    <>
+                        <button onClick={() => setIsEditing(true)}>Edit Foster Profile</button>
+                        <button onClick={handleDeleteFoster} style={{ marginLeft: '10px' }}>Delete Foster Profile</button>
+                    </>
                 )}
             </div>
             {cats.length === 0 ? <div>No cats listed for this foster.</div> : cats.map(cat => (

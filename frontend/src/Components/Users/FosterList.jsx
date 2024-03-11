@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Room8Api from '../../api/api';
-const FosterList = () => {
+
+const FosterList = ({ fosterUpdated }) => {
     const [fosters, setFosters] = useState([]);
 
     useEffect(() => {
@@ -11,7 +12,7 @@ const FosterList = () => {
             setFosters(res);
         };
         fetchFosters();
-    }, []);
+    }, [fosterUpdated]);
         
     return (
         <div>

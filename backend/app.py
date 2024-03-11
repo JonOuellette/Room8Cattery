@@ -101,19 +101,16 @@ def user_logout():
     session.pop(CURR_USER_KEY, None)
  
 
-@app.route('/admin/create-user', methods=['POST'])
+@app.route('/api/users/create', methods=['POST'])
 @jwt_required()
 def create_user():
-    # Extract the current user's ID from the JWT payload
     current_user_id = get_jwt_identity()['id']
-    # Fetch the user record from the database
     current_user = User.query.get(current_user_id)
 
-    # Ensure the current user exists and has admin privileges
-    if not current_user or not current_user.is_admin:
+    # Ensure the current user has admin privileges
+    if not current_user.is_admin:
         return jsonify({'error': 'Unauthorized, admin access required'}), 403
 
-    # Extract data from the request payload
     data = request.json
     username = data.get('username')
     email = data.get('email')
@@ -122,10 +119,10 @@ def create_user():
     last_name = data.get('last_name')
     phone_number = data.get('phone_number')
     is_foster = data.get('is_foster', False)
-    is_admin = data.get('is_admin', False)  
+    is_admin = data.get('is_admin', False)
 
     # Validate user inputs
-    if not all([username, email, password, first_name, last_name]) or not re.match("[^@]+@[^@]+\.[^@]+", email):
+    if not all([username, email, password, first_name, last_name]) or not re.match(r"[^@]+@[^@]+\.[^@]+", email):
         return jsonify({'error': 'Invalid input'}), 400
 
     # Create the user
@@ -140,7 +137,9 @@ def create_user():
             is_foster=is_foster,
             is_admin=is_admin  
         )
+        db.session.add(new_user)
         db.session.commit()
+
         return jsonify({
             'message': 'User created successfully',
             'user': {
@@ -150,10 +149,10 @@ def create_user():
                 'first_name': new_user.first_name,
                 'last_name': new_user.last_name,
                 'is_foster': new_user.is_foster,
-                'is_admin': new_user.is_admin 
+                'is_admin': new_user.is_admin
             }
         }), 201
-    except IntegrityError:
+    except IntegrityError as e:
         db.session.rollback()
         return jsonify({'error': 'This username or email is already used'}), 400
 
@@ -305,6 +304,34 @@ def update_user_info(user_id):
     
     db.session.commit()
     return jsonify({'message': 'User information updated successfully'}), 200
+
+@app.route('/api/users/<int:user_id>', methods=['DELETE'])
+@jwt_required()
+def delete_foster(user_id):
+    # Fetch the current user's details from the JWT token
+    current_user_id = get_jwt_identity()['id']
+    current_user = User.query.get(current_user_id)
+
+    # Check if the current user is an admin
+    if not current_user.is_admin:
+        return jsonify({'error': 'Unauthorized, admin access required'}), 403
+
+    # Fetch the user to be deleted from the database
+    user_to_delete = User.query.get_or_404(user_id)
+
+    # Check if the user to be deleted is a foster
+    if not user_to_delete.is_foster:
+        return jsonify({'error': 'The specified user is not a foster'}), 400
+    
+    if user_to_delete.fostered_cats.first() is not None:
+        return jsonify({'error': 'User cannot be deleted because they have fostered cats'}), 400
+
+    # Delete the user from the database
+    db.session.delete(user_to_delete)
+    db.session.commit()
+
+    # Return a success response
+    return jsonify({'message': f'Foster user with ID {user_id} has been successfully deleted'}), 200
 
 
 @app.route('/api/fosters/<int:foster_id>/cats', methods=['GET'])
