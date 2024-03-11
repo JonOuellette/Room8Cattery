@@ -21,7 +21,7 @@ const FosterList = () => {
                     
                     <li key={foster.id}>
                         <Link to={`/fosters/${foster.id}`}>{foster.first_name} {foster.last_name}</Link> - {foster.cat_count} Cats
-                        {/* - {foster.cats.length} Cats */}
+                       
                     </li>
                 ))}
             </ul>

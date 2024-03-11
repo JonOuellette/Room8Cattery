@@ -50,6 +50,11 @@ class Room8Api {
         return this.request('api/users/me');
     }
 
+    static async getUserDetailsById(userId) {
+        return this.request(`api/users/${userId}`, {}, 'get');
+    }
+    
+
     static async getFosterCats(fosterId) {
         return this.request(`api/fosters/${fosterId}/cats`);
     }

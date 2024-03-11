@@ -31,6 +31,7 @@ const AppRoutes = () => {
       <Route path="/volunteer" element={<VolunteerPage />} />
       <Route path="/donate" element={<DonatePage />} />
       <Route path="/profile" element={<PrivateRoute><UserProfile /></PrivateRoute>} />
+      <Route path="/users/:userId" element={<PrivateRoute><UserProfile /></PrivateRoute>} />
       <Route path="/fosters/:fosterId" element={<PrivateRoute><FosterDashboard /></PrivateRoute>} />
       <Route path="/admin-dashboard" element={<PrivateRoute><AdminDashboard /></PrivateRoute>} />
       <Route path="/signup" element={<SignUp />} />

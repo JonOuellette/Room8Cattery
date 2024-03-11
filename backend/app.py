@@ -232,6 +232,25 @@ def get_current_user_details():
         'is_foster': user.is_foster
     })
 
+@app.route('/api/users/<int:user_id>', methods=['GET'])
+@jwt_required()
+def get_user(user_id):
+    current_user = get_jwt_identity()
+    if not is_admin(current_user): 
+        return jsonify({"error": "Unauthorized"}), 401
+
+    user = User.query.get_or_404(user_id)
+    return jsonify({
+        'id': user.id,
+        'username': user.username,
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+        'email': user.email,
+        'phone_number': user.phone_number,
+        'is_admin': user.is_admin,
+        'is_foster': user.is_foster
+    })
+
 @app.route('/api/fosters', methods=['GET'])
 @jwt_required()
 def get_all_fosters():
@@ -299,7 +318,7 @@ def get_foster_cats(foster_id):
     print("######################Current User:", current_user)
     print("#####################Type:", type(current_user))
 
-    if current_user.id != foster_id or not current_user.is_foster:
+    if current_user.id != foster_id and not current_user.is_admin:
         return jsonify({'error': 'Unauthorized, foster access required'}), 403
 
     foster_cats = Cat.query.filter_by(foster_id=foster_id).all()
