@@ -12,7 +12,7 @@ function CatForm({ setEditing, userRole }) {
         gender: '',
         breed: '',
         description: '',
-        specialNeeds: '',
+        special_needs: '',
         microchip: '',
         cat_image: '',
         isFeatured: false,
@@ -30,7 +30,7 @@ function CatForm({ setEditing, userRole }) {
                     gender: catData.gender,
                     breed: catData.breed,
                     description: catData.description,
-                    specialNeeds: catData.special_needs || '',
+                    special_needs: catData.special_needs || '',
                     microchip: catData.microchip,
                     cat_image: catData.cat_image,
                     isFeatured: catData.is_featured,
@@ -60,9 +60,10 @@ function CatForm({ setEditing, userRole }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        console.log("Updating cat with data", formData); 
         const newErrors = validateForm(); alert(`${formData.cat_name} has been updated successfully.`);
         // Redirect user back to the cat details page
-        navigate(`/cats/${catId}`);
+        navigate(`/adopt`);
         if (newErrors.length > 0) {
             setErrors(newErrors);
             return;
@@ -88,7 +89,7 @@ function CatForm({ setEditing, userRole }) {
                     gender: '',
                     breed: '',
                     description: '',
-                    specialNeeds: '',
+                    special_needs: '',
                     microchip: '',
                     cat_image: '',
                     isFeatured: false,
@@ -122,8 +123,8 @@ function CatForm({ setEditing, userRole }) {
             <label htmlFor="description">Description:</label>
             <input type="text" id="description" name="description" value={formData.description} onChange={handleChange} required />
 
-            <label htmlFor="specialNeeds">Special Needs:</label>
-            <input type="text" id="specialNeeds" name="specialNeeds" value={formData.special_needs} onChange={handleChange} required />
+            <label htmlFor="special_needs">Special Needs:</label>
+            <input type="text" id="special_needs" name="special_needs" value={formData.special_needs} onChange={handleChange} required />
 
             <label htmlFor="microchip">Microchip #:</label>
             <input type="text" id="microchip" name="microchip" value={formData.microchip} onChange={handleChange} required />

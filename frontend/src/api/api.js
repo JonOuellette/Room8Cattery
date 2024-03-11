@@ -16,7 +16,7 @@ class Room8Api {
     static async request(endpoint, data = {}, method = 'get') {
         console.debug('API Call:', endpoint, data, method);
         // Ensure headers are correctly set for all API calls
-        const headers = { 
+        const headers = {
             'Content-Type': 'application/json', // Ensures that the server treats the sent data as JSON.
             Authorization: `Bearer ${this.token}` // Updated to use 'this' to correctly reference the token stored in this class.
         };
@@ -48,14 +48,14 @@ class Room8Api {
 
     static async getUserDetails() {
         return this.request('api/users/me');
-    }  
-
-    static async updateUser(id, data) {
-        return this.request(`users/${id}/update`, data, 'patch');
     }
 
-    static async setUserFoster(userId) {
-        return this.request(`users/${userId}/set-foster`, {}, 'patch');
+    static async getFosterCats(fosterId) {
+        return this.request(`api/fosters/${fosterId}/cats`);
+    }
+
+    static async changeUserPassword(userId, oldPassword, newPassword) {
+        return this.request(`api/users/${userId}/password`, { old_password: oldPassword, new_password: newPassword }, 'patch');
     }
 
     // Cat API calls
@@ -98,7 +98,7 @@ class Room8Api {
 
     // Volunteer API calls
     static async submitVolunteerForm(data) {
-        return this.request('volunteer', data, 'post');
+        return this.request('api/volunteer', data, 'post');
     }
 
     // Export data to Google Sheets
@@ -116,12 +116,17 @@ class Room8Api {
     }
 
     static async updateUser(userId, data) {
-        return this.request(`api/users/${userId}`, data, 'patch');
+        return this.request(`/api/users/${userId}/update`, data, 'patch');
     }
 
     static async setUserFoster(userId) {
         return this.request(`api/users/${userId}/set-foster`, {}, 'patch');
     }
+
+    static async getFosters() {
+        return this.request('api/fosters', {}, 'get');
+    }
+
 }
 
 export default Room8Api;

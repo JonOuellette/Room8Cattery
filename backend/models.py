@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
+from sqlalchemy.orm import validates
 
 db = SQLAlchemy()
 bcrypt = Bcrypt()
@@ -23,7 +24,7 @@ class User(db.Model):
     password = db.Column(db.String(255), nullable=False)
     first_name = db.Column(db.String(25), nullable=False)
     last_name = db.Column(db.String(25), nullable=False)
-    phone_number = db.Column(db.Integer)
+    phone_number = db.Column(db.BigInteger)
     is_admin = db.Column(db.Boolean, default=False)
     is_foster = db.Column(db.Boolean, default=False)
 
@@ -53,7 +54,7 @@ class User(db.Model):
 
         db.session.add(user)
         return user
-
+    
     @classmethod
     def authenticate(cls, username, password):
         """Find user with `username` and `password`.
@@ -71,7 +72,10 @@ class User(db.Model):
         else:
             return False
 
-
+    @validates('phone_number')
+    def validate_phone_number(self, key, phone_number):
+        assert len(str(phone_number)) == 10, "Phone number must be 10 digits"
+        return phone_number
 # class Admin(db.Model):
 #     __tablename__ = "admins"
 

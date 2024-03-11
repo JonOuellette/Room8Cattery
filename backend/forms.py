@@ -19,7 +19,7 @@ class LoginForm(FlaskForm):
     username = StringField('Username', validators=[InputRequired(), Length(min=5, max=15)])
     password = PasswordField('Password', validators=[InputRequired(), Length(min=6, max=20)])
 
-class AddCatForm(FlaskForm):
+class CatForm(FlaskForm):
     """Form to add cats"""
     cat_name = StringField('Cat Name', validators=[DataRequired(), Length(max=100)])
     age = IntegerField('Age', validators=[DataRequired(), NumberRange(min=0)])

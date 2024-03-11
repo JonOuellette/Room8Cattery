@@ -3,7 +3,7 @@ import os
 from flask import Flask, render_template, redirect, request, session, jsonify, g, flash, abort
 from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
-from datetime import datetime
+from datetime import datetime, timedelta
 import stripe
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
@@ -41,6 +41,7 @@ app.config['SQLALCHEMY_ECHO'] = False
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', MY_SECRET_KEY)
 app.config['JWT_SECRET_KEY'] = MY_JWT_SECRET_KEY
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1) 
 # toolbar = DebugToolbarExtension(app)
 
 stripe.api_key = STRIPE_API_KEY
@@ -62,6 +63,9 @@ def is_admin(current_user = None):
 def is_foster_or_admin(current_user = None):
     return (g.user and (g.user.is_foster or g.user.is_admin)) or (current_user and (current_user["is_foster"] or current_user["is_admin"]))
 
+def is_foster(current_user=None):
+    # Checks if the current session user or the provided user object has foster status
+    return (g.user and (g.user.is_foster)) or (current_user and (current_user["is_foster"]))
 
 # Google Sheets initialization:
 
@@ -209,7 +213,9 @@ def home():
     })
 
 ##############################################################################################################
+#USER ROUTES
 
+#fetches profile information of the user currently authenticated
 @app.route('/api/users/me', methods=['GET'])
 @jwt_required()
 def get_current_user_details():
@@ -218,34 +224,120 @@ def get_current_user_details():
     return jsonify({
         'id': user.id,
         'username': user.username,
+        'first_name': user.first_name,
+        'last_name': user.last_name,
         'email': user.email,
+        'phone_number': user.phone_number,
         'is_admin': user.is_admin,
         'is_foster': user.is_foster
     })
 
+@app.route('/api/fosters', methods=['GET'])
+@jwt_required()
+def get_all_fosters():
+    # Ensure the requester is an admin
+    current_user_id = get_jwt_identity()['id']
+    current_user = User.query.get(current_user_id)
+    if not current_user.is_admin:
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    # Fetch all fosters
+    fosters = User.query.filter_by(is_foster=True).all()
+    fosters_data = []
+    for foster in fosters:
+        # Count the cats for each foster
+        cat_count = Cat.query.filter_by(foster_id=foster.id).count()
+        fosters_data.append({
+            'id': foster.id,
+            'first_name': foster.first_name,
+            'last_name': foster.last_name,
+            'cat_count': cat_count
+        })
+
+    return jsonify(fosters_data)
+
 
 @app.route('/api/users/<int:user_id>/update', methods=['PATCH'])
+@jwt_required()  # Require authentication for this route
 def update_user_info(user_id):
-    # Ensure the logged-in user is the same as the one whose information is being updated
-    if g.user is None or g.user.id != user_id:
-        return jsonify({'error': 'Unauthorized'}), 403
-    
-    user = User.query.get_or_404(user_id)
-    data = request.json
+    jwt_claims = get_jwt_identity()
+    current_user_id = jwt_claims['id']
+    current_user = User.query.get_or_404(current_user_id)
 
-    if 'email' in data:
-        user.email = data['email']
-    if 'phone' in data:
-        user.phone = data['phone']
-    if 'password' in data:
-        # Hash the new password using bcrypt before storing it
-        hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
-        user.password = hashed_password
+    # Only allow the user to update their own profile unless they're an admin
+    if current_user_id != user_id and not current_user.is_admin:
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    user_to_update = User.query.get_or_404(user_id)
+    data = request.json
+    print("USER TO UPDATE:", user_to_update)
+    print("IS THE USER A FOSTER?",current_user.is_foster)
+    # Update user information, validate input as needed
+    if current_user.is_foster:
+        user_to_update.email = data.get('email', user_to_update.email)
+        user_to_update.phone_number = data.get('phone_number', user_to_update.phone_number)
+    elif current_user.is_admin:
+        user_to_update.first_name = data.get('first_name', user_to_update.first_name)
+        user_to_update.last_name = data.get('last_name', user_to_update.last_name)
+        user_to_update.email = data.get('email', user_to_update.email)
+        user_to_update.phone_number = data.get('phone_number', user_to_update.phone_number)
+        user_to_update.is_foster = data.get('is_foster', user_to_update.is_foster)
+        user_to_update.is_admin = data.get('is_admin', user_to_update.is_admin)
     
     db.session.commit()
     return jsonify({'message': 'User information updated successfully'}), 200
 
 
+@app.route('/api/fosters/<int:foster_id>/cats', methods=['GET'])
+@jwt_required()
+def get_foster_cats(foster_id):
+    jwt_claims = get_jwt_identity()
+    current_user_id = jwt_claims['id']  
+    current_user = User.query.get_or_404(current_user_id)  # Retrieves the User model instance based on JWT claims.
+    
+    # Print the current user and its type
+    print("######################Current User:", current_user)
+    print("#####################Type:", type(current_user))
+
+    if current_user.id != foster_id or not current_user.is_foster:
+        return jsonify({'error': 'Unauthorized, foster access required'}), 403
+
+    foster_cats = Cat.query.filter_by(foster_id=foster_id).all()
+    print("################FOSTER CATS:", foster_cats)
+    cats_data = [{
+        'id': cat.id,
+        'name': cat.cat_name,
+        'age': cat.age,
+        'gender': cat.gender,
+        'breed': cat.breed,
+        'description': cat.description,
+        'special_needs': cat.special_needs,
+        'cat_image': cat.cat_image,
+        'is_featured': cat.is_featured,
+        'adopted': cat.adopted
+    } for cat in foster_cats]
+
+    return jsonify(cats_data)
+
+@app.route('/api/users/<int:user_id>/password', methods=['PATCH'])
+@jwt_required()
+def change_password(user_id):
+    current_user_id = get_jwt_identity()['id']
+    if current_user_id != user_id:
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    user = User.query.get_or_404(user_id)
+    data = request.json
+    old_password = data.get('old_password')
+    new_password = data.get('new_password')
+    
+    if not user or not bcrypt.check_password_hash(user.password, old_password):
+        return jsonify({'error': 'Current password is incorrect'}), 403
+    # Update the password
+    user.password = bcrypt.generate_password_hash(new_password).decode('UTF-8')
+    db.session.commit()
+    
+    return jsonify({'message': 'Password updated successfully'}), 200
 
 
 ##############################################################################################################
@@ -307,6 +399,7 @@ def get_cat_details(cat_id):
         'special_needs': cat.special_needs,
         "microchip": cat.microchip,
         'cat_image': cat.cat_image,
+        'foster_id': cat.foster_id,
         'is_featured': cat.is_featured
         
     }
@@ -317,13 +410,15 @@ def get_cat_details(cat_id):
 @jwt_required()
 def add_cat():
     current_user = get_jwt_identity()
+    current_user_id = current_user['id']
     
-    # Vefify  direct role and ID checks with is_foster_or_admin()
+    # Verify direct role and ID checks with is_foster_or_admin()
     if not is_foster_or_admin(current_user):
         return jsonify({'error': 'Unauthorized'}), 403
 
     # adding new cat
     data = request.json
+    print("CAT DATA!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", data)
     new_cat = Cat(
         cat_name=data.get('cat_name'),
         age=data.get('age'),
@@ -334,8 +429,8 @@ def add_cat():
         cat_image=data.get('cat_image', DEFAULT_IMAGE_URL),
         microchip = data.get('microchip'),
         is_featured=data.get('is_featured', False),
-        adopted=False
-        # foster_id=current_user["id"] 
+        adopted=False,
+        foster_id=current_user_id
     )
     print(new_cat, "THIS IS THE NEW CAT!!!!!!!!!!!!!!!!!!!!!!!!!!")
     db.session.add(new_cat)
@@ -369,7 +464,7 @@ def update_cat_info(cat_id):
     data = request.json
 
     # Check if the current user is the foster of the cat or an admin
-    if not (current_user.id == cat.foster_id or current_user.is_admin):
+    if not(current_user.id == cat.foster_id or current_user.is_admin):
         return jsonify({'error': 'Unauthorized'}), 403
 
     # Update cat information

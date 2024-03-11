@@ -9,6 +9,11 @@ import CatForm from '../Components/CatForm/CatForm';
 import DonatePage from '../Components/DonatePage/DonatePage';
 import SignUp from '../Components/SignUp/SignUp';
 import Login from '../Components/Login/Login';
+import VolunteerPage from '../Components/Volunteer/VolunteerPage';
+import UserProfile from '../Components/Users/UserProfile';
+import FosterDashboard from '../Components/Users/FosterDashboard';
+import AdminDashboard from '../Components/Users/AdminDashboard';
+
 
 function PrivateRoute({ children }) {
   const { user } = useContext(UserContext);
@@ -23,7 +28,11 @@ const AppRoutes = () => {
       <Route path="/cats/:catId" element={<CatDetails />} />
       <Route path="/add-cat" element={<PrivateRoute><CatForm /></PrivateRoute>} />
       <Route path="/edit-cat/:catId" element={<PrivateRoute><CatForm /></PrivateRoute>} />
+      <Route path="/volunteer" element={<VolunteerPage />} />
       <Route path="/donate" element={<DonatePage />} />
+      <Route path="/profile" element={<PrivateRoute><UserProfile /></PrivateRoute>} />
+      <Route path="/fosters/:fosterId" element={<PrivateRoute><FosterDashboard /></PrivateRoute>} />
+      <Route path="/admin-dashboard" element={<PrivateRoute><AdminDashboard /></PrivateRoute>} />
       <Route path="/signup" element={<SignUp />} />
       <Route path="/login" element={<Login />} />
     </Routes>
