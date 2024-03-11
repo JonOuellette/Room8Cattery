@@ -5,9 +5,11 @@ import FosterList from './FosterList';
 import CreateAccountForm from '../CreateAccount/CreateAccountForm';
 import ReactModal from 'react-modal';
 
+
 const AdminDashboard = () => {
   const [isCreatingAccount, setIsCreatingAccount] = useState(false);
   const [fosterUpdated, setFosterUpdated] = useState(false);
+  
 
   ReactModal.setAppElement('#root');
 
@@ -18,6 +20,7 @@ const AdminDashboard = () => {
       <button onClick={() => setIsCreatingAccount(true)}>Create New User</button>
       <FosterList fosterUpdated={fosterUpdated} />
 
+      {/* Modal for creating a new account */}
       <ReactModal
         isOpen={isCreatingAccount}
         onRequestClose={() => setIsCreatingAccount(false)}
@@ -33,11 +36,13 @@ const AdminDashboard = () => {
           }
         }}
       >
-        <CreateAccountForm 
-          closeModal={() => setIsCreatingAccount(false)} 
+        <CreateAccountForm
+          closeModal={() => setIsCreatingAccount(false)}
           onUserCreated={() => setFosterUpdated(prev => !prev)} // Updating state on user creation
         />
       </ReactModal>
+
+     
     </div>
   );
 };

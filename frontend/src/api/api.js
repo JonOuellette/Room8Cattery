@@ -74,6 +74,10 @@ class Room8Api {
         return this.request('api/fosters', {}, 'get');
     }
 
+    static async getAdmins(userId) {
+        return this.request('api/admins', {}, 'get')
+    }
+
     static async deleteUser(userId) {
         return this.request(`api/users/${userId}`, {}, 'delete');
     }
@@ -114,6 +118,11 @@ class Room8Api {
     static async getFosterCats(fosterId) {
         return this.request(`api/fosters/${fosterId}/cats`);
     }
+
+    static async reassignCat(catId, newFosterId) {
+        return this.request(`api/cats/${catId}/reassign`, { new_foster_id: newFosterId }, 'post');
+    }
+    
     // Donation API calls
     static async createCharge(data) {
         return this.request('create-charge', data, 'post');

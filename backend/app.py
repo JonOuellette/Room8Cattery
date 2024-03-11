@@ -274,6 +274,31 @@ def get_all_fosters():
 
     return jsonify(fosters_data)
 
+@app.route('/api/admins', methods=['GET'])
+@jwt_required()
+def get_all_admins():
+    # Ensure the requester is an admin
+    current_user_id = get_jwt_identity()['id']
+    current_user = User.query.get(current_user_id)
+    if not current_user.is_admin:
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    # Fetch all admins
+    admins = User.query.filter_by(is_admin=True).all()
+    admins_data = []
+    for admin in admins:
+        admins_data.append({
+            'id': admin.id,
+            'username': admin.username,
+            'first_name': admin.first_name,
+            'last_name': admin.last_name,
+            'email': admin.email,
+            'phone_number': admin.phone_number,
+            'is_admin': admin.is_admin
+        })
+
+    return jsonify(admins_data)
+
 
 @app.route('/api/users/<int:user_id>/update', methods=['PATCH'])
 @jwt_required()  # Require authentication for this route
@@ -435,6 +460,7 @@ def get_adoptable_cats():
 @app.route('/api/cats/<int:cat_id>', methods=['GET'])
 def get_cat_details(cat_id):
     cat = Cat.query.get_or_404(cat_id)
+    print("***********************************GET CAT DETAILS CATS**************************", cat)
     cat_details = {
         'id': cat.id,
         'name': cat.cat_name,
@@ -446,6 +472,7 @@ def get_cat_details(cat_id):
         "microchip": cat.microchip,
         'cat_image': cat.cat_image,
         'foster_id': cat.foster_id,
+        'foster_name': f"{cat.foster_user.first_name} {cat.foster_user.last_name}" if cat.foster_user else None,
         'is_featured': cat.is_featured
         
     }
@@ -586,6 +613,55 @@ def toggle_cat_featured(cat_id):
         'id': cat.id,
         'is_featured': cat.is_featured
     }), 200
+
+@app.route('/api/cats/<int:cat_id>/reassign', methods=['POST'])
+@jwt_required()
+def reassign_cat(cat_id):
+    jwt_claims = get_jwt_identity()
+    current_user_id = jwt_claims['id']
+    current_user = User.query.get_or_404(current_user_id)
+
+    
+    # Check if the current user is an admin
+    if not current_user.is_admin:
+        # Check if the current user is an admin
+        return jsonify({'error': 'Unauthorized, admin access required'}), 403
+
+    cat = Cat.query.get_or_404(cat_id)
+    data = request.json
+    new_foster_id = data.get('new_foster_id')
+
+    if new_foster_id:
+        new_foster = User.query.get(new_foster_id)
+        if not new_foster:
+            # Check if the new foster exists
+            return jsonify({'error': 'New foster not found'}), 404
+        
+        if not new_foster.is_foster and not new_foster.is_admin:
+            # Ensure the new user is either a foster or an admin
+            return jsonify({'error': 'New user must be a foster or an admin'}), 400
+        
+    # else:
+    #     # If no new foster is provided, make the admin the cat's foster
+    #     new_foster_id = current_user.id    
+    else:
+        # If no new foster is provided, retain the current foster
+        return jsonify({'error': 'New foster ID required'}), 400
+
+
+    cat.foster_id = new_foster_id
+    db.session.commit()
+
+    updated_cat = Cat.query.get(cat_id)
+    print("################REASSIGN CAT UPDATED CAT:", updated_cat)
+    db.session.refresh(updated_cat)  # Refresh from the database to ensure data is updated
+    return jsonify({
+        'message': 'Cat reassigned successfully',
+        'cat_id': updated_cat.id,
+        'new_foster_id': updated_cat.foster_id,
+        'new_foster_name': f"{new_foster.first_name} {new_foster.last_name}"
+    }), 200
+
 
 ####################################################################################################################
 #exporting cat data to spreadsheets using Google SpreadSheets API
