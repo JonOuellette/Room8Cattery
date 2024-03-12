@@ -25,10 +25,7 @@ bcrypt = Bcrypt(app)
 CORS(app, origins=["http://127.0.0.1:5173"], supports_credentials=True)
 jwt = JWTManager(app)
 
-
-from secretkeys import MY_SECRET_KEY, STRIPE_API_KEY
-from models import connect_db, User, db, Cat, Volunteer, Donation
-from secretkeys import MY_SECRET_KEY, MY_JWT_SECRET_KEY
+from secretkeys import MY_SECRET_KEY, MY_JWT_SECRET_KEY, STRIPE_API_KEY
 from models import connect_db, User, db, Cat, Volunteer, Donation, Adoption
 from forms import VolunteerForm
 
