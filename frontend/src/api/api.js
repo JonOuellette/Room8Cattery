@@ -135,11 +135,11 @@ class Room8Api {
 
     // Export data to Google Sheets
     static async exportCats() {
-        return this.request('export/cats');
+        return this.request('api/export/cats');
     }
 
     static async exportFosters() {
-        return this.request('export/fosters');
+        return this.request('api/export/fosters');
     }
 
  

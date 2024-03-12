@@ -1,10 +1,11 @@
 import os
 
-from flask import Flask, render_template, redirect, request, session, jsonify, g, flash, abort
+from flask import Flask,  request, session, jsonify, g, flash, abort
 from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from datetime import datetime, timedelta
 import stripe
+import google.auth
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 # from flask_debugtoolbar import DebugToolbarExtension
@@ -667,7 +668,16 @@ def reassign_cat(cat_id):
 #exporting cat data to spreadsheets using Google SpreadSheets API
 
 @app.route('/api/export/cats')
+@jwt_required()
 def export_cats_to_sheet():
+     # Get the identity of the current user
+    current_user_id = get_jwt_identity()['id']
+    current_user = User.query.get(current_user_id)
+    print("********EXPORT CAT DATA CURRENT USER*******:", current_user )
+    # Check if the current user is an admin
+    if not current_user.is_admin:
+        return jsonify({'error': 'Unauthorized, admin access required'}), 403
+
     spreadsheet_id = '1g3ZoPFgyB7uEeYFu446DlRj3ITIkKpy1SMgUNXPMrBI'  #Google Sheet ID
     range_name = 'Cats!A1'  
 
@@ -688,31 +698,47 @@ def export_cats_to_sheet():
         valueInputOption='RAW',
         body=body).execute()
 
-    return jsonify({'updated_cells': result.get('updatedCells')})
+    # Construct the URL to the Google Sheet
+    sheet_url = f"https://docs.google.com/spreadsheets/d/{spreadsheet_id}"
+
+    return jsonify({'updated_cells': result.get('updatedCells'), 'sheet_url': sheet_url})
 
 
 @app.route('/api/export/fosters')
+@jwt_required()
 def export_fosters_to_sheet():
-    spreadsheet_id = '12yvi-j8rOJoKeWdbyL_Z7AdBxaPs6Is4Hk6AGMOpK7k'  #Google Sheet Id
-    range_name = 'Fosters!A1'  
+
+    current_user_id = get_jwt_identity()['id']
+    current_user = User.query.get(current_user_id)
+    print("********EXPORT FOSTER DATA CURRENT USER*******:", current_user )
+    # Check if the current user is an admin
+    if not current_user.is_admin:
+        return jsonify({'error': 'Unauthorized, admin access required'}), 403
+
+    spreadsheet_id = '12yvi-j8rOJoKeWdbyL_Z7AdBxaPs6Is4Hk6AGMOpK7k'  # Google Sheet ID
+    range_name = 'Fosters!A1'
 
     # Fetch foster data from your database
     fosters = User.query.filter_by(is_foster=True).all()
     values = [['User ID', 'First Name', 'Last Name', 'Email', 'Phone Number']]  # Column headers
-    values += [[user.id, user.first_name, user.last_name, user.email, user.phone or ''] for user in fosters]
+    for foster in fosters:
+        values.append([foster.id, foster.first_name, foster.last_name, foster.email, foster.phone_number or ''])
 
     # Initialize Google Sheets API
     sheet = initialize_google_sheets()
-    body = {
-        'values': values
-    }
+    body = {'values': values}
     result = sheet.values().update(
         spreadsheetId=spreadsheet_id,
         range=range_name,
         valueInputOption='RAW',
         body=body).execute()
 
-    return jsonify({'updated_cells': result.get('updatedCells')})
+    # Construct the URL to the Google Sheet
+    sheet_url = f"https://docs.google.com/spreadsheets/d/{spreadsheet_id}"
+
+    # Return the URL along with the updated cells count
+    return jsonify({'updated_cells': result.get('updatedCells'), 'sheet_url': sheet_url})
+
 
 #####################################################################################################################
 # Volunteer form - allows users to submit form indicating interest in volunteering
