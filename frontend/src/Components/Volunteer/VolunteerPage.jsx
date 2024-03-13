@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import ReactModal from 'react-modal';
-import VolunteerForm from './VolunteerForm'; // Make sure the path is correct
+import VolunteerForm from './VolunteerForm'; 
+import './VolunteerFormStyles.css';
 
 const VolunteerPage = () => {
     const [modalIsOpen, setModalIsOpen] = useState(false);
@@ -16,7 +17,21 @@ const VolunteerPage = () => {
             
             <button onClick={openModal}>Volunteer with Us!</button>
             
-            <ReactModal 
+            <ReactModal
+                className="modal-content"
+                overlayClassName="modal-overlay"
+                //  style={{
+                //     content: {
+                //       top: '25%',
+                //       left: '50%',
+                //       right: 'auto',
+                //       bottom: 'auto',
+                //       marginRight: '-50%',
+                //       transform: 'translate(-50%, -50%)',
+                //       width: '50%' 
+                //     }
+                //   }}
+                
                 isOpen={modalIsOpen}
                 onRequestClose={closeModal}
                 contentLabel="Volunteer Form"

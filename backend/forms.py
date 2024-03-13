@@ -23,10 +23,11 @@ class CatForm(FlaskForm):
     """Form to add cats"""
     cat_name = StringField('Cat Name', validators=[DataRequired(), Length(max=100)])
     age = IntegerField('Age', validators=[DataRequired(), NumberRange(min=0)])
+    gender = StringField("Gender", validators=[DataRequired()])
     breed = StringField('Breed', validators=[DataRequired(), Length(max=100)])
     description = TextAreaField('Description', validators=[Optional(), Length(max=500)])
     special_needs = TextAreaField('Special Needs', validators=[Optional(), Length(max=500)])
-    microchip = IntegerField("Microchip Number", validatiors =[Optional()])
+    microchip = IntegerField("Microchip Number", validators =[Optional(), NumberRange(min=0, max=999999999999999)])
     cat_image = StringField('Cat Image URL', validators=[DataRequired(), Length(max=255)])
     is_featured = BooleanField('Feature this Cat?', default=False)
     foster_id = SelectField('Foster', coerce=int, choices=[])  # You need to populate choices in the view or controller

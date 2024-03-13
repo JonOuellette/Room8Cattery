@@ -112,7 +112,7 @@ function CatForm({ setEditing, userRole }) {
             <input type="text" id="cat_name" name="cat_name" value={formData.cat_name} onChange={handleChange} required />
 
             <label htmlFor="age">Age:</label>
-            <input type="number" id="age" name="age" value={formData.age} onChange={handleChange} required />
+            <input type="number" id="age" name="age" value={formData.age} onChange={handleChange}  min="0" required />
 
             <label htmlFor="gender">Gender:</label>
             <input type="text" id="gender" name="gender" value={formData.gender} onChange={handleChange} required />
@@ -127,7 +127,7 @@ function CatForm({ setEditing, userRole }) {
             <input type="text" id="special_needs" name="special_needs" value={formData.special_needs} onChange={handleChange} required />
 
             <label htmlFor="microchip">Microchip #:</label>
-            <input type="text" id="microchip" name="microchip" value={formData.microchip} onChange={handleChange} required />
+            <input type="text" id="microchip" name="microchip" value={formData.microchip} onChange={handleChange} maxLength="15" pattern="\d*" required />
 
             <label htmlFor="cat_image">Cat Image URL:</label>
             <input type="text" id="cat_image" name="cat_image" value={formData.cat_image} onChange={handleChange} required />

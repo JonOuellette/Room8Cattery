@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Room8Api from '../../api/api'; 
+import './VolunteerFormStyles.css';
 
 function VolunteerForm() {
     const [formData, setFormData] = useState({
@@ -57,10 +58,10 @@ function VolunteerForm() {
     };
 
     return (
-        <div>
+        <div className='volunteer-form-container'>
             <h2>Volunteer Application</h2>
             {message && <p>{message}</p>}
-            <form onSubmit={handleSubmit}>
+            <form className="volunteer-form" onSubmit={handleSubmit}>
                 <label>
                     First Name:
                     <input 

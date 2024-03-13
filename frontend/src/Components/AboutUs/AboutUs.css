@@ -1,0 +1,103 @@
+/* AboutUs.css */
+.about-us {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px;
+    margin-top: 20px;
+    width: 100%;
+}
+
+.intro-section, .mission-statement, .history, .get-involved {
+    margin-bottom: 40px;
+}
+
+h1, h2 {
+    color: #333;
+}
+h1 {
+    margin-left: 0px;
+}
+
+p {
+    line-height: 1.6;
+    color: #666;
+}
+
+.get-involved ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 20px;
+}
+
+.get-involved li {
+    margin-bottom: 7px;
+    padding-left: 20px;
+    position: relative;
+}
+
+.get-involved li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 5px;
+    width: 8px;
+    height: 8px;
+    background-color: #666; 
+    border-radius: 50%;
+}
+
+.mission-statement ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 20px;
+}
+
+.mission-statement li {
+    margin-bottom: 7px;
+    padding-left: 20px;
+    position: relative;
+}
+.mission-statement li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 5px;
+    width: 8px;
+    height: 8px;
+    background-color: #666; 
+    border-radius: 50%;
+}
+
+.about-us {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+}
+
+.about-section {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    width: 100%;
+}
+
+.image-container {
+    flex: 1;
+}
+
+.text-container {
+    flex: 2;
+    
+}
+
+.about-image {
+    max-width: 100%;
+    height: auto;
+}
+
+.about-us h1 {
+    text-align: left; 
+    width: 100%; 
+}

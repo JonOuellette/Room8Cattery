@@ -1,0 +1,71 @@
+/* In Navbar.css */
+.navbar {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    height: 70px; /* Set specific height */
+    background-color: rgba(55, 70, 74, 1);
+    z-index: 1000; /* Ensure navbar stays on top of other content */
+    display: flex;
+    align-items: center; /* This will vertically center the content */
+    justify-content: space-between; /* This keeps the original space-around effect */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3); /* Optional: adds shadow for visibility */
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 20px; /* Adjust based on your design */
+    margin: 0;
+    padding: 0;
+    /* Your other styles */
+}
+
+.nav-links li {
+    display: inline;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: white; /* Link text color */
+    padding: 10px 15px; /* Adjust link padding */
+    border-radius: 5px; /* Optional: for rounded link corners */
+    transition: background-color 0.3s ease; /* Smooth background transition */
+}
+
+.nav-links a:hover, .nav-links a:active {
+    background-color: rgba(171,196,53,1);
+}
+
+.nav-links button {
+    background-color: transparent;
+    color: white; /* Button text color */
+    border: none;
+    cursor: pointer;
+    padding: 10px 15px; /* Aligns with link padding */
+    border-radius: 5px; /* Optional: for rounded button corners */
+    transition: background-color 0.3s ease;
+}
+
+.nav-links button:hover {
+    background-color: #555; /* Change background on hover */
+}
+
+.nav-brand img {
+    height: 70px; /* Adjust based on your logo's size */
+    width: auto;
+    margin-right: 10px;
+}
+
+.logo-and-name {
+    display: flex;
+    align-items: center;
+    justify-content: start;
+}
+
+.nav-name {
+    color: white; /* Adjust the color as needed */
+    margin: 0; /* Removes default margins to align better with the logo */
+}
+
+

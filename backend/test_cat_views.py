@@ -4,7 +4,7 @@ from models import db, connect_db, User, Cat
 from app import app
 
 # Use the testing database
-os.environ['DATABASE_URL'] = 'postgresql://postgres:postgres@localhost/Room8CatteryTest'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@localhost/Room8CatteryTest'
 
 # Configure your app for testing mode
 app.config['TESTING'] = True

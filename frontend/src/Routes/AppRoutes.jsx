@@ -13,6 +13,7 @@ import VolunteerPage from '../Components/Volunteer/VolunteerPage';
 import UserProfile from '../Components/Users/UserProfile';
 import FosterDashboard from '../Components/Users/FosterDashboard';
 import AdminDashboard from '../Components/Users/AdminDashboard';
+import AboutUs from '../Components/AboutUs/AboutUs';
 
 
 function PrivateRoute({ children }) {
@@ -25,6 +26,7 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/adopt" element={<CatList />} />
+      <Route path="/about" element={<AboutUs />} />
       <Route path="/cats/:catId" element={<CatDetails />} />
       <Route path="/add-cat" element={<PrivateRoute><CatForm /></PrivateRoute>} />
       <Route path="/edit-cat/:catId" element={<PrivateRoute><CatForm /></PrivateRoute>} />

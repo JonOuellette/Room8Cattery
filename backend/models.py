@@ -99,6 +99,7 @@ class Cat(db.Model):
     foster_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
     foster = db.relationship('User', backref=db.backref('cats_fostered', lazy='dynamic'))
+       
 
 class Adoption(db.Model):
     __tablename__ = "adoptions"

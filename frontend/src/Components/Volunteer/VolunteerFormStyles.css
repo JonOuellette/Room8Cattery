@@ -1,0 +1,58 @@
+.volunteer-form-container {
+    width: 95%; /* Adjust width as needed */
+    margin: 0 auto; /* Center the form horizontally */
+}
+
+/* Style each input field and label */
+.volunteer-form label,
+.volunteer-form input,
+.volunteer-form textarea,
+.volunteer-form button {
+    display: block;
+    margin-bottom: 5px; /* Add space between each input field */
+    width: 60%; /* Make each input field full width */
+}
+
+/* Style the fieldset and legend */
+.volunteer-form fieldset {
+    margin-bottom: 20px; /* Add space between the fieldset and other elements */
+    border: none; /* Remove default fieldset border */
+}
+
+.volunteer-form legend {
+    margin-bottom: 10px; /* Add space below the legend */
+    font-weight: bold; /* Make the legend text bold */
+}
+
+/* Additional styling for checkboxes */
+.volunteer-form input[type="checkbox"] {
+    display: inline-block;
+    margin-right: 5px;
+    
+}
+
+.modal-content {
+    top: 25%;
+    left: 50%;
+    
+    
+    width: 30%;
+    padding: 20px;
+    background-color: rgba(255,255,255);
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); /* Add shadow effect */
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+    backdrop-filter: blur(1px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+

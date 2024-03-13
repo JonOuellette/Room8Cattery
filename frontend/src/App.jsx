@@ -9,7 +9,9 @@ function App() {
       <UserProvider>
           <Router>
               <Navbar />
-              <AppRoutes />
+              <div className="content-container">
+                    <AppRoutes />
+                </div>
           </Router>
       </UserProvider>
   );

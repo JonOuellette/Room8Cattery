@@ -1,20 +1,21 @@
 import unittest
-from models import User, Cat, db
-from app import app
-
-# Setup your app to use the testing configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@localhost/Room8CatteryTest'
-app.config['TESTING'] = True
+from app import create_app, db 
+from models import User, Cat
+from sqlalchemy.exc import IntegrityError
 
 class CatModelTestCase(unittest.TestCase):
     """Test cases for the Cat model."""
 
     def setUp(self):
         """Create test client, add sample data."""
+        self.app = create_app({'TESTING': True, 'SQLALCHEMY_DATABASE_URI': 'postgresql://postgres:postgres@localhost/Room8CatteryTest'})
+        self.app_context = self.app.app_context()
+        self.app_context.push()
         db.create_all()
-
+        # Correct the line below:
+        print("********************************Testing database URI:", self.app.config['SQLALCHEMY_DATABASE_URI'])
         # Create sample user
-        user1 = User.signup("testuser", "test@test.com", "password", "Test", "User", 1234567890, False, True)
+        user1 = User.signup("testuser100", "test@test.com", "password", "Test", "User", 1234567890, False, True)
         user1.id = 1111
         db.session.commit()
 
@@ -25,7 +26,7 @@ class CatModelTestCase(unittest.TestCase):
 
         self.cat1_id = cat1.id
         self.user1_id = user1.id
-        self.client = app.test_client()
+        self.client = self.app.test_client()
 
     def tearDown(self):
         """Clean up any fouled transaction."""
@@ -72,7 +73,56 @@ class CatModelTestCase(unittest.TestCase):
         self.assertEqual(cat2.cat_name, 'Shadow')
         self.assertTrue(cat2.is_featured)
 
-    # Additional tests can include invalid data, checking for default values, etc.
+    def test_invalid_cat_creation(self):
+        """Attempting to create a cat with invalid data fails."""
+        with self.app.app_context():
+            invalid_cat = Cat(cat_name='Test', age=-1, gender='Female', breed='Test', microchip=-1)
+            db.session.add(invalid_cat)
+            try:
+                # Attempt to commit the session to trigger the IntegrityError
+                db.session.commit()
+            except IntegrityError:
+                # If an IntegrityError is caught, pass the test
+                db.session.rollback()  # Roll back the session to clean up
+                return
+            except Exception as e:
+                # If an unexpected exception is caught, fail the test with the error message
+                self.fail(f'Unexpected exception raised: {e}')
+            # Explicitly fail the test if no exceptions are raised
+            self.fail('IntegrityError was not raised')
+
+
+
+    def test_default_values(self):
+        """Test default values for is_featured and adopted."""
+        default_cat = Cat(cat_name='Default', age=4, gender='Male', breed='Mixed', microchip=123456789)
+        db.session.add(default_cat)
+        db.session.commit()
+
+        cat = Cat.query.get(default_cat.id)
+        self.assertFalse(cat.is_featured)
+        self.assertFalse(cat.adopted)
+
+    def test_update_cat_info(self):
+        """Test updating cat information."""
+        cat = Cat.query.get(self.cat1_id)
+        cat.age = 3
+        cat.description = 'Updated description.'
+        db.session.commit()
+
+        updated_cat = Cat.query.get(self.cat1_id)
+        self.assertEqual(updated_cat.age, 3)
+        self.assertEqual(updated_cat.description, 'Updated description.')
+
+    def test_delete_cat(self):
+        """Test deleting a cat."""
+        cat = Cat.query.get(self.cat1_id)
+        db.session.delete(cat)
+        db.session.commit()
+
+        deleted_cat = Cat.query.get(self.cat1_id)
+        self.assertIsNone(deleted_cat)
+
 
 if __name__ == '__main__':
     unittest.main()
