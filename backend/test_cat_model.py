@@ -76,7 +76,7 @@ class CatModelTestCase(unittest.TestCase):
     def test_invalid_cat_creation(self):
         """Attempting to create a cat with invalid data fails."""
         with self.app.app_context():
-            invalid_cat = Cat(cat_name='Test', age=-1, gender='Female', breed='Test', microchip=-1)
+            invalid_cat = Cat(cat_name='Test', age = 0, gender='Female', breed='Test', microchip=-1)
             db.session.add(invalid_cat)
             try:
                 # Attempt to commit the session to trigger the IntegrityError

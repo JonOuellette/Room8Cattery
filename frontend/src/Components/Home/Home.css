@@ -1,63 +1,171 @@
-
 .home-container {
-    margin: 0 auto;
-    max-width: 1200px; /* Adjust based on your layout preference */
-    padding: 20px;
+    margin: 0px auto;
+    max-width: 100%;
+    padding: px;
     
 }
 
+.hero-section {
+    background: url('../../images/Homebanner.png') center center;
+    background-size: auto; 
+    padding: 80px 0; 
+    text-align: center;
+    position: relative;
+    margin-top: 70px;
+    height: 100%;
+}
+
+.hero-section h1 {
+    color: #860A35;
+    -webkit-text-stroke: 1px white; 
+    font-size: 4em;
+    position: relative; 
+    z-index: 1;
+    font-weight: 800;
+}
+
 .hero-section, .about-section, .feature-section, .volunteer-section {
-    margin-bottom: 40px;
+    margin-bottom: 20px;
 }
 
 .hero-section h1, .about-section h2, .feature-section h2, .volunteer-section h2 {
-    color: #333; /* Adjust the color */
+    color: #860A35; 
+    
 }
 
 .hero-section p, .about-section p, .feature-section p, .volunteer-section p {
-    color: #666; /* Adjust the color */
+    color: #666; 
+}
+.cta-text, .cta-button {
+    flex: 2; 
+    padding-right: 20px;
+}
+
+.cta-text h2, .cta-button .btn-primary {
+    font-size: 1.5em; /* Adjust based on your preference for consistency with the featured cats' titles */
+    color: #333; /* Ensures text color consistency */
+}
+.cta-text h2{
+    font-size: 2.5rem;
+    font-weight: 500;
+    color: #666;
+    padding-bottom: 10px;;
+
+}
+.call-to-action-section {
+    display: flex;
+    justify-content: center; /* Aligns items in the center for symmetry with the featured cats */
+    gap: 40px; /* Ensures spacing between text and button is consistent with the gap between cats */
+    padding: 35px 70px;
+    align-items: center;
+    
+}
+
+.cta-text p {
+    margin-bottom: 20px;
+}
+
+.cta-text {
+    flex: 2;
+    font-size: 1.25rem ;
+    padding: 20px;
+}
+
+.cta-button {
+    justify-content: center;
+    padding-top: 20px;
+    padding-left: 0px;
+    
+}
+
+.cta-button .btn-primary{
+    color: white;
+}
+
+.btn-primary {
+    padding: 15px 30px; /* Increased padding for a bigger button */
 }
 
 .btn-primary, .btn-secondary {
-    background-color: #007bff; /* Adjust the color */
+    background-color: #6c757d; /* Adjust the color */
     border: none;
     border-radius: 5px;
     color: white;
     cursor: pointer;
-    padding: 10px 20px;
+    padding: 50px 50px;
     text-align: center;
     text-decoration: none;
     display: inline-block;
+    margin: 50px;
 }
 
 .btn-secondary {
-    background-color: #6c757d; /* Adjust the color */
+    background-color: #6c757d;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+    display: inline-block; /* Ensures buttons respect width and height */
+    margin: 20px; /* Adds some space around the buttons */
+    padding: 15px 20px; /* Adjust padding to ensure buttons are of equal size */
+    text-align: center;
+    text-decoration: none;
+    width: 150px; /* Ensures all buttons are the same width */
+    height: 100px; /* Ensures all buttons are the same height */
+    box-sizing: border-box; 
+    line-height: 60px;
 }
 
-.featured-cats-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px; /* Space between cards */
+.feature-section {
+    text-align: center;
+    background-color: #A3B763;
 }
 
-.cat-card {
-    border: 1px solid #ddd; /* Adjust the border style */
-    border-radius: 8px;
-    overflow: hidden;
-    width: 300px; /* Adjust based on your layout preference */
+.feature-section h2{
+    font-size: 3rem;
+    font-weight: 500;
+    color: #860A35;
 }
 
-.cat-card img {
-    width: 100%;
-    height: auto;
-    border-bottom: 1px solid #ddd; /* Adjust the border style */
+.volunteer-section  {
+    text-align:center;
+    padding-bottom: 45px
+    
 }
 
-.cat-card h3 {
-    margin: 10px;
+.volunteer-section h2{
+    text-align: center;
+    font-size: 2.5rem;
+    font-weight: 500;
+    color: #666;
+    padding-bottom: 20px;
+}
+.volunteer-section .btn-secondary {
+    flex: 0 1 auto; 
+    font-size: 1.25rem;
+    
+    
+    
+    
 }
 
-.cat-card p {
-    margin: 10px;
-    color: #666; /* Adjust the text color */
+.volunteer-section p{
+    text-align: center;
+    font-size: 1.25rem;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.adoption-centers h2{
+    text-align: center;
+    font-size: 2.5rem;
+    font-weight: 500;
+    color: #666;
+}
+
+@media (max-width: 768px) {
+    .call-to-action-section, .feature-section {
+        flex-direction: column; /* Stacks items on smaller screens */
+        align-items: center; /* Centers items vertically */
+    }
 }

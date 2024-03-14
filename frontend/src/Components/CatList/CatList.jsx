@@ -30,11 +30,17 @@ function CatList() {
         getCats();
     }, [refreshKey]);
 
-    
+
 
     return (
         <div>
             <h2>Adoptable Cats</h2>
+            <p>At Room 8 Memorial Cat Foundation, we believe every cat deserves a chance at a loving forever home. Our adoption process is designed to ensure the best match between our cats and their potential families, creating lifelong bonds that bring joy and companionship to both.
+
+                Our cats come from various backgrounds—rescued strays, surrendered pets, and those simply in need of a new home. Each cat has a unique story, but they all share a common desire: to be loved and cared for.
+
+                When you choose to adopt from us, you're not just gaining a pet; you're giving a second chance to a deserving soul.</p>
+                
             {user && (user.is_admin || user.is_foster) && (
                 <Link to="/add-cat" className="btn btn-primary">Add Cat</Link>
             )}

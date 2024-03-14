@@ -5,38 +5,40 @@
 
   color-scheme: light dark;
   color: #666;
-  background-color: white;
+  background-color: #F5F5F5;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  -moz-osx-font-smoothing: grayscale; 
 }
 
-a {
+/* a {
   font-weight: 500;
   color: rgba(171, 196, 53, 1 );
   text-decoration: inherit;
 }
 a:hover {
   color: white
-}
+} */
 
-body {
+/* body {
   margin: 0;
   padding:0;
   display: flex;
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
-}
+} */
 
-h1 {
+ h1 {
   font-size: 3.2em;
   line-height: 1.1;
+  margin-top: 70px;
 
 }
 
+/*
 button {
   border-radius: 8px;
   border: 1px solid transparent;
@@ -67,4 +69,4 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
-}
+} */

@@ -1,5 +1,5 @@
 .main-content {
-  margin-top: 70px; /* Adjust based on the actual height of your navbar */
+  margin-top: 70px;
 }
 
 
@@ -7,6 +7,7 @@
   display: flex;
   place-items: center;
   min-width: 320px;
-  width: 100%; /* Ensure it takes the full width */
-  flex-direction: column; /* Stack vertically */
+  width: 100%; 
+  flex-direction: column; 
 }
+

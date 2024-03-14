@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Room8Api from '../../api/api';
+import './FeaturedCats.css'; 
+
 
 const FeaturedCats = () => {
     const [cats, setCats] = useState([]);
@@ -23,11 +25,11 @@ const FeaturedCats = () => {
         <div className="featured-cats-container">
             {cats.map(cat => (
                 <div key={cat.id} className="cat-card">
-                    <Link to={`/cats/${cat.id}`}>
+                    <Link style= {{textDecoration: 'none'}} to={`/cats/${cat.id}`}>
                         <img src={cat.cat_image} alt={cat.name} />
-                        <h3>{cat.name}</h3>
-                        <p>{cat.description}</p>
+                        <h3>{cat.name} Age: {cat.age} months old</h3>
                     </Link>
+                    
                 </div>
             ))}
         </div>

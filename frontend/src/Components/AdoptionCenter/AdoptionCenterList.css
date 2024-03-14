@@ -1,0 +1,52 @@
+/* AdoptionCenterList.css */
+.adoption-centers-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Adjust gap between cards */
+    margin: 20px 0;
+}
+
+/* AdoptionCenter.css */
+.adoption-center-card {
+    display: flex;
+    align-items: center;
+    background-color: #f4f4f4; /* Light background */
+    border-radius: 10px; /* Rounded corners */
+    overflow: hidden;
+}
+
+.center-image-container {
+    flex: 1;
+}
+
+.center-image {
+    width: 100%;
+    height: auto;
+    object-fit: cover; /* Ensures the image covers the div without being stretched */
+}
+
+.center-info {
+    text-align: center;
+    flex: 2;
+    padding: 20px;
+    background-color: #FFE6E6; /* Change according to your color scheme */
+    color: #860A35; 
+}
+
+
+
+.details-button {
+    margin-top: 10px;
+    padding: 10px 20px;
+    background-color: #333; /* Button color */
+    color: white; /* Button text color */
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.details-button:hover {
+    background-color: #555; /* Button hover color */
+}
+
+
