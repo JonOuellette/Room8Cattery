@@ -30,7 +30,7 @@ class CatForm(FlaskForm):
     microchip = IntegerField("Microchip Number", validators =[Optional(), NumberRange(min=0, max=999999999999999)])
     cat_image = StringField('Cat Image URL', validators=[DataRequired(), Length(max=255)])
     is_featured = BooleanField('Feature this Cat?', default=False)
-    foster_id = SelectField('Foster', coerce=int, choices=[])  # You need to populate choices in the view or controller
+    foster_id = SelectField('Foster', coerce=int, choices=[])  
     submit = SubmitField('Submit')
 
 class AdoptionForm(FlaskForm):

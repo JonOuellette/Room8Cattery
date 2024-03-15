@@ -1,6 +1,8 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from sqlalchemy.orm import validates
+from sqlalchemy.schema import CheckConstraint
+import re
 
 db = SQLAlchemy()
 bcrypt = Bcrypt()
@@ -76,6 +78,13 @@ class User(db.Model):
     def validate_phone_number(self, key, phone_number):
         assert len(str(phone_number)) == 10, "Phone number must be 10 digits"
         return phone_number
+    
+    @validates('email')
+    def validate_email(self, key, email):
+        if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+            raise ValueError('Invalid email format')
+        return email
+    
 # class Admin(db.Model):
 #     __tablename__ = "admins"
 
@@ -99,7 +108,11 @@ class Cat(db.Model):
     foster_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
     foster = db.relationship('User', backref=db.backref('cats_fostered', lazy='dynamic'))
-       
+    
+    __table_args__ = (
+        CheckConstraint('age >= 0', name='age_positive'),
+        CheckConstraint('microchip >= 0', name='microchip_positive'),
+    )
 
 class Adoption(db.Model):
     __tablename__ = "adoptions"

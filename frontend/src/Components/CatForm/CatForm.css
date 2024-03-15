@@ -1,0 +1,78 @@
+.form-container {
+    max-width: 500px;
+    margin: 100px auto; 
+    padding: 20px;
+    background-color: #f4f4f4;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.form-field {
+    display: flex; /* This will align the label and input side by side */
+    align-items: center; /* Align items in each field vertically */
+    margin-bottom: 15px; /* Add space between each form field */
+}
+
+.form-field label {
+    background-color: #ffdddd; /* Reddish background */
+    color: black; /* Text color, change as needed */
+    padding: 10px; /* Padding around the text */
+    margin-right: 10px; /* Space between the label and the input */
+    flex: 0 0 120px; /* Adjust width as needed, ensures label width is fixed */
+    text-align: right; /* Aligns the text to the right */
+}
+
+.form-field input[type="text"],
+.form-field input[type="number"],
+.form-field input[type="email"],
+
+.form-field textarea {
+    flex-grow: 1; /* Input fields take up remaining space */
+    padding: 10px; /* Padding inside the input field */
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    background-color: #fff; /* Black background */
+    color: #333; /* Text color for input */
+}
+
+.form-field input[type="checkbox"] {
+    margin-left: 130px; /* Align checkbox with input fields */
+}
+
+.form-container button {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    /* Remove float if you want to center the button as well */
+    display: block; /* Makes the button a block element */
+    margin: 20px auto 0; /* Centers the button */
+}
+
+.error {
+    color: red;
+    font-size: 0.875em;
+    margin-bottom: 20px;
+}
+
+.form-field input[type="checkbox"] {
+    margin-left: 130px; /* Align checkbox with input fields */
+    /* Ensure there are no styles like 'display: none' or 'visibility: hidden' */
+}
+
+@media (max-width: 600px) {
+    .form-field {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .form-field label {
+        text-align: left;
+        margin-bottom: 5px; /* Add space between label and input on small screens */
+        flex-basis: auto; /* Let label take natural height */
+    }
+    .form-field input[type="checkbox"] {
+        margin-left: 0; /* Adjust checkbox alignment on small screens */
+    }
+}

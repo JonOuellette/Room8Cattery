@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import Room8Api from '../../api/api';
 import { useParams, useNavigate } from 'react-router-dom';
+import { UserContext } from '../UserContext';
+import './CatForm.css';
+
 
 function CatForm({ setEditing, userRole }) {
     const { catId } = useParams()
     const navigate = useNavigate();
     console.log(catId)
+    console.log("Current user role:", userRole);
+
     const [formData, setFormData] = useState({
         cat_name: '',
         age: 0,
@@ -60,7 +65,7 @@ function CatForm({ setEditing, userRole }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log("Updating cat with data", formData); 
+        console.log("Updating cat with data", formData);
         const newErrors = validateForm(); alert(`${formData.cat_name} has been updated successfully.`);
         // Redirect user back to the cat details page
         navigate(`/adopt`);
@@ -74,7 +79,7 @@ function CatForm({ setEditing, userRole }) {
                     ...formData,
                     is_featured: userRole === 'admin' ? formData.isFeatured : false,
                 });
-                
+
                 // Redirect user back to the cat details page
                 navigate(`/cats/${catId}`);
             } else {
@@ -102,43 +107,64 @@ function CatForm({ setEditing, userRole }) {
             console.error("Error submitting form:", err);
             setErrors([...errors, err.message || "Unknown error"]);
         }
+
     };
 
 
     return (
-        <form onSubmit={handleSubmit}>
+        <form className='form-container' onSubmit={handleSubmit}>
             {errors.map((error, idx) => <p key={idx} className="error">{error}</p>)}
-            <label htmlFor="cat_name">Name:</label>
-            <input type="text" id="cat_name" name="cat_name" value={formData.cat_name} onChange={handleChange} required />
+            <div className='form-field'>
+                <label htmlFor="cat_name">Name:</label>
+                <input type="text" id="cat_name" name="cat_name" value={formData.cat_name} onChange={handleChange} required />
+            </div>
 
-            <label htmlFor="age">Age:</label>
-            <input type="number" id="age" name="age" value={formData.age} onChange={handleChange}  min="0" required />
+            <div className='form-field'>
+                <label htmlFor="age">Age:</label>
+                <input type="number" id="age" name="age" value={formData.age} onChange={handleChange} min="0" required />
+            </div>
 
-            <label htmlFor="gender">Gender:</label>
-            <input type="text" id="gender" name="gender" value={formData.gender} onChange={handleChange} required />
+            <div className='form-field'>
+                <label htmlFor="gender">Gender:</label>
+                <input type="text" id="gender" name="gender" value={formData.gender} onChange={handleChange} required />
+            </div>
 
-            <label htmlFor="breed">Breed:</label>
-            <input type="text" id="breed" name="breed" value={formData.breed} onChange={handleChange} required />
+            <div className='form-field'>
+                <label htmlFor="breed">Breed:</label>
+                <input type="text" id="breed" name="breed" value={formData.breed} onChange={handleChange} required />
+            </div>
 
-            <label htmlFor="description">Description:</label>
-            <input type="text" id="description" name="description" value={formData.description} onChange={handleChange} required />
+            <div className='form-field'>
+                <label htmlFor="description">Description:</label>
+                <input type="text" id="description" name="description" value={formData.description} onChange={handleChange} required />
+            </div>
 
-            <label htmlFor="special_needs">Special Needs:</label>
-            <input type="text" id="special_needs" name="special_needs" value={formData.special_needs} onChange={handleChange} required />
+            <div className='form-field'>
+                <label htmlFor="special_needs">Special Needs:</label>
+                <input type="text" id="special_needs" name="special_needs" value={formData.special_needs} onChange={handleChange} required />
+            </div>
 
-            <label htmlFor="microchip">Microchip #:</label>
-            <input type="text" id="microchip" name="microchip" value={formData.microchip} onChange={handleChange} maxLength="15" pattern="\d*" required />
-
-            <label htmlFor="cat_image">Cat Image URL:</label>
-            <input type="text" id="cat_image" name="cat_image" value={formData.cat_image} onChange={handleChange} required />
+            <div className='form-field'>
+                <label htmlFor="microchip">Microchip #:</label>
+                <input type="text" id="microchip" name="microchip" value={formData.microchip} onChange={handleChange} maxLength="15" pattern="\d*" required />
+            </div>
+            <div className='form-field'>
+                <label htmlFor="cat_image">Cat Image URL:</label>
+                <input type="text" id="cat_image" name="cat_image" value={formData.cat_image} onChange={handleChange} required />
+            </div>
 
             {userRole === 'admin' && (
-                <>
+                <div className='form-field'>
                     <label htmlFor="isFeatured">Featured:</label>
-                    <input type="checkbox" id="isFeatured" name="isFeatured" checked={formData.isFeatured} onChange={handleChange} />
-                </>
+                    <input
+                        type="checkbox"
+                        id="isFeatured"
+                        name="isFeatured"
+                        checked={formData.isFeatured}
+                        onChange={handleChange}
+                    />
+                </div>
             )}
-
             <button type="submit">{catId ? 'Update Cat' : 'Add Cat'}</button>
         </form>
     );

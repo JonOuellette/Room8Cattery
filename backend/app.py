@@ -1,58 +1,3 @@
-# import os
-
-# from flask import Flask,  request, session, jsonify, g, flash, abort
-# from flask_migrate import Migrate
-# from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
-# from datetime import datetime, timedelta
-# import stripe
-# import google.auth
-# from google.oauth2.service_account import Credentials
-# from googleapiclient.discovery import build
-# # from flask_debugtoolbar import DebugToolbarExtension
-# from sqlalchemy import or_
-# from sqlalchemy.exc import IntegrityError
-# from sqlalchemy.orm import joinedload
-# from flask_bcrypt import Bcrypt
-# from flask_cors import CORS
-
-# import requests
-# import re
-# import random
-
-
-# app = Flask(__name__)
-# # app.app_context().push()
-# bcrypt = Bcrypt(app)
-# CORS(app, origins=["http://127.0.0.1:5173"], supports_credentials=True)
-# jwt = JWTManager(app)
-
-# from secretkeys import MY_SECRET_KEY, MY_JWT_SECRET_KEY, STRIPE_API_KEY
-# from models import connect_db, User, db, Cat, Volunteer, Donation, Adoption
-# from forms import VolunteerForm
-
-# CURR_USER_KEY = "curr_user"
-
-# app.config['SQLALCHEMY_DATABASE_URI'] = (
-#     os.environ.get('DATABASE_URL', 'postgresql://postgres:postgres@localhost/Room8Cattery'))
-
-# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-# app.config['SQLALCHEMY_ECHO'] = False
-# app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
-# app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', MY_SECRET_KEY)
-# app.config['JWT_SECRET_KEY'] = MY_JWT_SECRET_KEY
-# app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1) 
-# # toolbar = DebugToolbarExtension(app)
-
-# stripe.api_key = STRIPE_API_KEY
-
-# DEFAULT_IMAGE_URL = "https://www.freeiconspng.com/uploads/cats-paw-icon-17.png" 
-
-# connect_db(app)
-# # db.create_all()
-# migrate = Migrate(app, db)
-
-# jwt = JWTManager(app)
-
 import os
 from flask import Flask, request, session, jsonify, g, abort, flash
 from flask_migrate import Migrate
@@ -283,7 +228,7 @@ def create_app(test_config=None):
             'is_admin': user.is_admin,
             'is_foster': user.is_foster
         })
-
+    # Allows admins to access other users profiles
     @app.route('/api/users/<int:user_id>', methods=['GET'])
     @jwt_required()
     def get_user(user_id):
@@ -368,10 +313,11 @@ def create_app(test_config=None):
         data = request.json
         print("USER TO UPDATE:", user_to_update)
         print("IS THE USER A FOSTER?",current_user.is_foster)
-        # Update user information, validate input as needed
+        # Allows fosters to update email and phone number
         if current_user.is_foster:
             user_to_update.email = data.get('email', user_to_update.email)
             user_to_update.phone_number = data.get('phone_number', user_to_update.phone_number)
+        # Allows admin to update all user information including foster user information    
         elif current_user.is_admin:
             user_to_update.first_name = data.get('first_name', user_to_update.first_name)
             user_to_update.last_name = data.get('last_name', user_to_update.last_name)
@@ -419,7 +365,6 @@ def create_app(test_config=None):
         current_user_id = jwt_claims['id']  
         current_user = User.query.get_or_404(current_user_id)  # Retrieves the User model instance based on JWT claims.
         
-        # Print the current user and its type
         print("######################Current User:", current_user)
         print("#####################Type:", type(current_user))
 
@@ -537,7 +482,7 @@ def create_app(test_config=None):
     def add_cat():
         current_user = get_jwt_identity()
         current_user_id = current_user['id']
-        
+        print("AM I AN ADMIN", current_user_id)
         # Verify direct role and ID checks with is_foster_or_admin()
         if not is_foster_or_admin(current_user):
             return jsonify({'error': 'Unauthorized'}), 403
@@ -545,6 +490,7 @@ def create_app(test_config=None):
         # adding new cat
         data =request.get_json()
         form = CatForm(formdata=None, data=data)
+        
         print("CAT DATA!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", data)
         new_cat = Cat(
             cat_name=form.cat_name.data,

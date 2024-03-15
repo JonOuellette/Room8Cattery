@@ -1,26 +1,25 @@
 import unittest
-from models import User, db
-from app import app
-
-# Setup your app to use the testing configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@localhost/Room8CatteryTest'
-app.config['TESTING'] = True
+from app import create_app, db 
+from models import User, Cat
+from sqlalchemy.exc import IntegrityError
 
 class UserModelTestCase(unittest.TestCase):
     """Test cases for User model."""
 
     def setUp(self):
         """Create test client, add sample data."""
+        self.app = create_app({'TESTING': True, 'SQLALCHEMY_DATABASE_URI': 'postgresql://postgres:postgres@localhost/Room8CatteryTest'})
+        self.app_context = self.app.app_context()
+        self.app_context.push()
         db.create_all()
-        user1 = User.signup("testuser", "test@test.com", "password", "Test", "User", 1234567890, False, False)
-        user1.id = 1111
-
+        print("********************************Testing database URI:", self.app.config['SQLALCHEMY_DATABASE_URI'])
+        # Create sample user and assign to self.user1
+        self.user1 = User.signup("testuser200", "test@test.com", "password", "Test", "User", 1234567890, False, True)
+        self.user1.id = 2222
         db.session.commit()
 
-        user1 = User.query.get(user1.id)
-
-        self.user1 = user1
-        self.client = app.test_client()
+        self.user1_id = self.user1.id
+        self.client = self.app.test_client()
 
     def tearDown(self):
         """Clean up any fouled transaction."""

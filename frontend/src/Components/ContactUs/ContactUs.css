@@ -1,0 +1,53 @@
+.contact-container {
+    text-align: center;
+}
+
+.contact-banner-container {
+    background-image: url('../../images/kittenbanner.jpg'); 
+    background-size: cover;
+    background-position: center;
+    height: 300px;  
+    text-align: left;
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 70px
+}
+
+.contact-banner-container h1 {
+    color: #666;
+    margin-left: 15%;
+    
+}
+
+.contact-info {
+    background: #f9f9f9;
+    padding: 20px;
+    margin-top: 20px;
+    border-radius: 5px;
+    font-size: 1.3rem
+}
+
+.contact-info h2 {
+    color: #333;
+    margin-top: 25px;
+    font-size: 1.5rem;
+    text-decoration-line: underline;
+    font-weight: bold;
+
+    
+}
+
+.contact-info p, .contact-info a {
+    color: #666;
+    line-height: 1.6;
+    padding-top: 3px;
+}
+
+.contact-info a {
+    text-decoration: none;
+    color: #007bff;
+}
+
+.contact-info a:hover {
+    text-decoration: underline;
+}

@@ -7,7 +7,7 @@ class CatModelTestCase(unittest.TestCase):
     """Test cases for the Cat model."""
 
     def setUp(self):
-        """Create test client, add sample data."""
+        """Create test client."""
         self.app = create_app({'TESTING': True, 'SQLALCHEMY_DATABASE_URI': 'postgresql://postgres:postgres@localhost/Room8CatteryTest'})
         self.app_context = self.app.app_context()
         self.app_context.push()

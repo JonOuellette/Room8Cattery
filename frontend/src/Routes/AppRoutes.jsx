@@ -7,7 +7,7 @@ import CatList from '../Components/CatList/CatList';
 import CatDetails from '../Components/CatDetails/CatDetails';
 import CatForm from '../Components/CatForm/CatForm';
 import DonatePage from '../Components/DonatePage/DonatePage';
-
+import ContactUs from '../Components/ContactUs/ContactUs';
 import Login from '../Components/Login/Login';
 import VolunteerPage from '../Components/Volunteer/VolunteerPage';
 import UserProfile from '../Components/Users/UserProfile';
@@ -36,7 +36,7 @@ const AppRoutes = () => {
       <Route path="/users/:userId" element={<PrivateRoute><UserProfile /></PrivateRoute>} />
       <Route path="/fosters/:fosterId" element={<PrivateRoute><FosterDashboard /></PrivateRoute>} />
       <Route path="/admin-dashboard" element={<PrivateRoute><AdminDashboard /></PrivateRoute>} />
-      
+      <Route path="/contact" element={<ContactUs />} />
       <Route path="/login" element={<Login />} />
     </Routes>
   );
