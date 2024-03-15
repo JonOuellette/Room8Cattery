@@ -2,12 +2,18 @@ import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserContext } from '../UserContext';
 import Room8Api from '../../api/api';
+import ReactModal from 'react-modal';
+import './Login.css'
 
 function Login() {
     const navigate = useNavigate();
     const { setUser, setToken } = useContext(UserContext); 
     const [formData, setFormData] = useState({ username: '', password: '' });
     const [error, setError] = useState('');
+    const [modalIsOpen, setModalIsOpen] = useState(false);
+
+    const openModal = () => setModalIsOpen(true);
+    const closeModal = () => setModalIsOpen(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -35,10 +41,10 @@ function Login() {
     };
 
     return (
-        <div>
+        <div className='login-form-container'>
             <h2>Login</h2>
             {error && <p className="error">{error}</p>}
-            <form onSubmit={handleSubmit}>
+            <form className='login-form' onSubmit={handleSubmit}>
                 <div>
                     <label htmlFor="username">Username:</label>
                     <input
@@ -63,6 +69,7 @@ function Login() {
                 </div>
                 <button type="submit">Login</button>
             </form>
+            
         </div>
     );
 }

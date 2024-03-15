@@ -1,0 +1,77 @@
+/* OurTeamList.css */
+.team-member-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.team-member-card {
+    display: flex;
+    align-items: center;
+    background-color: #f4f4f4;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    padding: 30px;
+    height: 500px;
+}
+
+.team-member-card:nth-child(odd) {
+    flex-direction: row;
+    background-color: #A3B763; 
+}
+
+.team-member-card:nth-child(even) {
+    flex-direction: row-reverse;
+    background-color: #860A35; 
+}
+
+.team-member-image-container {
+    width: 250px; 
+    padding: 0 40px;
+}
+
+.team-member-image {
+    width: 100%;
+    height: auto;
+    border-radius: 10px; 
+    object-fit: cover;
+    border: 3px solid white
+}
+
+.team-member-info {
+    padding: 20px;
+    flex: 1; 
+    text-align: left; 
+    
+}
+
+.team-member-info h3, .team-member-info p {
+    margin: 10px 0;
+}
+
+.team-member-name, .team-member-role, .team-member-details {
+    text-align: center; 
+    font-size: 1.5rem; 
+}
+
+.team-member-name {
+    font-weight: bold;
+    color: #666; 
+}
+
+.team-member-role, .team-member-details {
+    color: #666; 
+    font-size: 1.25rem;
+}
+
+.team-member-board-members .team-member-info {
+    text-align: center; 
+}
+
+.team-member-board-members h3{
+    font-size: 2rem;
+    
+}

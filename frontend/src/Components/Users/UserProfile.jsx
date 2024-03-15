@@ -6,6 +6,7 @@ import FosterDashboard from './FosterDashboard';
 import ReactModal from 'react-modal';
 import EditProfileForm from './EditProfileForm'; 
 import ChangePasswordForm from './ChangePasswordForm'; 
+import './UserProfile.css'
 
 ReactModal.setAppElement('#root'); 
 
@@ -35,7 +36,7 @@ function UserProfile() {
     }
     console.log("PROFILE DATA:", profileData)
     return (
-        <div>
+        <div className='user-profile'>
             <h2>{profileData.username}'s Profile</h2>
             <div>First Name: {profileData.first_name}</div>
             <div>Last Name: {profileData.last_name}</div>

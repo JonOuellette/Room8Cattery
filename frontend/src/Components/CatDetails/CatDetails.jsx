@@ -4,19 +4,20 @@ import { UserContext } from '../UserContext'; // Adjust path as necessary
 import Room8Api from '../../api/api';
 import ReassignCatForm from '../ReassignCat/ReassignCatForm';
 import ReactModal from 'react-modal';
+import './CatDetails.css'
 
 function CatDetails() {
     const [cat, setCat] = useState(null);
     const [error, setError] = useState(null);
     const { catId } = useParams();
-    console.log("Cat ID:",catId);
+    console.log("Cat ID:", catId);
     const navigate = useNavigate();
     const { user } = useContext(UserContext);
     const [isReassigning, setIsReassigning] = useState(false);
 
     console.log("Logged in user details:", user);
-    
-    
+
+
     const getCatDetails = async () => {
         try {
             const catDetails = await Room8Api.getCatDetails(catId);
@@ -87,17 +88,22 @@ function CatDetails() {
     console.log("FOSTER INFORMATION:", cat.foster)
     return (
         <div className="cat-details">
-            <h2>{cat.name} ({cat.age} years old)</h2>
-            <div><img src={cat.cat_image} alt={cat.cat_name} style={{ maxWidth: '100%' }} /></div>
-            <p>Breed: {cat.breed}</p>
-            <p>Description: {cat.description}</p>
-            <p>Special Needs: {cat.special_needs || 'None'}</p>
-            <p>Featured: {cat.is_featured ? 'Yes' : 'No'}</p>
-            
-            <p>Foster: {cat.foster_name ? cat.foster_name : 'No foster assigned'}</p>
+            <div className='cat-info'>
+                <img className='cat-image' src={cat.cat_image} alt={cat.cat_name} />
+                <div className='cat-text'>
+                    <h2>{cat.name} ({cat.age} years old)</h2>
+                    <p>Breed: {cat.breed}</p>
+                    <p>Description: {cat.description}</p>
+                    <p>Special Needs: {cat.special_needs || 'None'}</p>
+                    <p>Featured: {cat.is_featured ? 'Yes' : 'No'}</p>
+                    <p>Foster: {cat.foster_name ? cat.foster_name : 'No foster assigned'}</p>
+
+                </div>
+            </div>
             {(user && (user.is_admin || user.id === cat.foster_id)) && (
-                        <button onClick={() => navigate(`/edit-cat/${catId}`)}>Edit</button>
-                    )}
+                <button onClick={() => navigate(`/edit-cat/${catId}`)}>Edit</button>
+            )}
+
 
             {user && user.is_admin && (
                 <>
@@ -132,14 +138,14 @@ function CatDetails() {
                     }
                 }}
             >
-                <ReassignCatForm 
-                    catId={catId} 
-                    closeModal={() => setIsReassigning(false)} 
+                <ReassignCatForm
+                    catId={catId}
+                    closeModal={() => setIsReassigning(false)}
                     onCatReassigned={getCatDetails}
-                    // onCatReassigned={() => {
-                    //     setIsReassigning(false); // Close the modal on successful reassignment
-                    //     getCatDetails(); // Refresh cat details to update the foster name
-                    // }}
+                // onCatReassigned={() => {
+                //     setIsReassigning(false); // Close the modal on successful reassignment
+                //     getCatDetails(); // Refresh cat details to update the foster name
+                // }}
                 />
             </ReactModal>
         </div>

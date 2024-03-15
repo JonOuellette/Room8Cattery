@@ -1,0 +1,43 @@
+.admin-dashboard {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 20px ;
+    
+    width: 95%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.admin-dashboard h2 {
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+}
+
+.admin-dashboard button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin: 5px ;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.admin-dashboard button:hover {
+    background-color: #45a049;
+}
+
+.admin-dashboard a {
+    text-decoration: none;
+    color: #2c3e50;
+    background-color: #ecf0f1;
+    padding: 10px 15px;
+    border-radius: 5px;
+    display: inline-block;
+    margin-top: 10px;
+}
+
+.admin-dashboard a:hover {
+    background-color: #bdc3c7;
+}

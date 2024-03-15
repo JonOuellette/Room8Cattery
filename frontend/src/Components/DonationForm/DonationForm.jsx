@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import './DonationForm.css'
 
 const DonationForm = () => {
     const stripe = useStripe();
@@ -33,13 +34,15 @@ const DonationForm = () => {
     };
 
     return (
-        <form onSubmit={handleSubmit}>
+        <form className='donation-form' onSubmit={handleSubmit}>
+             <label htmlFor="amount">Donation Amount</label>
             <input
                 type="number"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="Amount"
             />
+            <label>Card Information</label>
             <CardElement />
             <button type="submit" disabled={!stripe}>
                 Donate

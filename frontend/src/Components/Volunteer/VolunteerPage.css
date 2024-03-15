@@ -1,0 +1,68 @@
+.volunteer-page {
+    max-width: 100%; 
+     
+}
+
+.volunteer-intro {
+    max-width: 66.67%; /* Adjusts the max-width to compress the text */
+    margin: 0 auto; /* Centers the section horizontally */
+    padding: 20px; /* Adds padding for spacing */
+}
+
+.volunteer-intro h1{
+        color: #666;
+        text-align: center;
+        font-size: 4em;
+        font-weight: 600;    
+        margin-bottom: 20px   
+}
+
+.volunteer-intro p {
+    color: #666; 
+    margin-bottom: 20px;
+    font-size: 1.25rem; 
+    line-height: 1.5;
+    
+    
+}
+
+
+.volunteer-button {
+    display: block; 
+    margin: 20px auto; 
+    padding: 15px 30px; 
+    font-size: 1.2rem; 
+    cursor: pointer; 
+    border: none; 
+    border-radius: 5px; 
+    background-color: #860A35; 
+    color: white; 
+    transition: background-color 0.3s;
+}
+
+.volunteer-button:hover {
+    background-color: #A3B763; /* Changes the background color on hover, adjust as needed */
+}
+
+
+.volunteer-modal-close {
+    
+    top: 10px;
+    right: 10px;
+    border: none;
+    background-color: transparent;
+    color: #333;
+    font-size: 1.5rem;
+    cursor: pointer;
+    
+}
+
+.modal-overlay {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content{
+    margin-top: 50px;
+}

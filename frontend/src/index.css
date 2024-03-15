@@ -13,6 +13,9 @@
   -moz-osx-font-smoothing: grayscale; 
 }
 
+a {
+  text-decoration: none;
+}
 /* a {
   font-weight: 500;
   color: rgba(171, 196, 53, 1 );
@@ -35,6 +38,7 @@ a:hover {
   font-size: 3.2em;
   line-height: 1.1;
   margin-top: 70px;
+  font-weight: 600;
 
 }
 

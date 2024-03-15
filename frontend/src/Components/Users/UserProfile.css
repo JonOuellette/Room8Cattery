@@ -1,0 +1,52 @@
+.user-profile {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 100px;
+    margin-left: 150px;
+    width: 80%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    
+}
+
+.user-profile h2 {
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 1.6rem;
+}
+
+.user-profile div {
+    margin-bottom: 10px;
+    
+}
+
+.user-profile button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+.user-profile button:hover {
+    background-color: #2980b9;
+}
+
+.user-profile .modal-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.user-profile .modal-close {
+    cursor: pointer;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+}

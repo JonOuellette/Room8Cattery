@@ -1,6 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { UserContext } from '../UserContext';
 import Room8Api from '../../api/api';
+import './EditProfileForm.css'
 
 function EditProfileForm({ close }) {
     const { user, setUser } = useContext(UserContext);
@@ -52,7 +53,7 @@ function EditProfileForm({ close }) {
     };
 
     return (
-        <form onSubmit={handleSubmit}>
+        <form className= 'edit-profile-form' onSubmit={handleSubmit}>
             {errors.map((error, idx) => <p key={idx} className="error">{error}</p>)}
             {user.is_admin && (
                 <>

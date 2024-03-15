@@ -1,7 +1,7 @@
 .home-container {
     margin: 0px auto;
     max-width: 100%;
-    padding: px;
+    
     
 }
 
@@ -142,10 +142,7 @@
 }
 .volunteer-section .btn-secondary {
     flex: 0 1 auto; 
-    font-size: 1.25rem;
-    
-    
-    
+    font-size: 1.25rem; 
     
 }
 

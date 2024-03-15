@@ -4,6 +4,7 @@ import Room8Api from '../../api/api';
 import FosterList from './FosterList';
 import CreateAccountForm from '../CreateAccount/CreateAccountForm';
 import ReactModal from 'react-modal';
+import './AdminDashboard.css'
 
 
 const AdminDashboard = () => {
@@ -36,7 +37,7 @@ const AdminDashboard = () => {
 
 
   return (
-    <div>
+    <div className='admin-dashboard'>
       <h2>Admin Dashboard</h2>
       <button onClick={() => setIsCreatingAccount(true)}>Create New User</button>
       <FosterList fosterUpdated={fosterUpdated} />

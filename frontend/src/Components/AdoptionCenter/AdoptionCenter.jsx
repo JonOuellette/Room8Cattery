@@ -1,5 +1,5 @@
 import React from 'react';
-import './AdoptionCenter.css'; // Make sure this CSS file exists and is correctly linked
+import './AdoptionCenter.css'; 
 
 const AdoptionCenter = ({ name, address, image, location }) => {
     return (

@@ -1,0 +1,59 @@
+/* OurTeamMembers.css */
+.team-member-card {
+    display: flex;
+    margin-bottom: 20px;
+    overflow: hidden;
+    border-radius: 10px;
+}
+
+
+.team-member-card.right-aligned {
+    flex-direction: row-reverse;
+}
+
+.team-member-card.bg-color-main {
+    background-color: #A3B763; 
+}
+
+.team-member-card.bg-color-alternate {
+    background-color: #860A35; 
+}
+
+.team-member-image-container {
+    width: 15%; 
+}
+
+.team-member-image {
+    width: 100%;
+    height: auto;
+    object-fit: cover; 
+}
+
+.team-member-info {
+    padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; 
+}
+
+.team-member-name, .team-member-role, .team-member-details {
+    margin-bottom: 10px;
+}
+
+.team-member-info ul {
+    text-align: center; 
+    padding: 0; 
+    list-style-position: inside; 
+}
+
+
+.team-member-info li {
+    display: inline-block; 
+    text-align: left; 
+    margin: 0 10px; 
+}
+
+.team-member-details {
+    text-align: center; 
+}

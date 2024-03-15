@@ -1,46 +1,101 @@
 .volunteer-form-container {
-    width: 95%; /* Adjust width as needed */
-    margin: 0 auto; /* Center the form horizontally */
+    width: 95%;
+    background-color: #f9f9f9; 
+    padding: 20px;
+    border-radius: 10px;
 }
 
-/* Style each input field and label */
+.volunteer-form-container h2 {
+    font-size: 2rem;
+    text-align: center
+}
+
+.volunteer-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 auto;
+    
+}
+
 .volunteer-form label,
 .volunteer-form input,
 .volunteer-form textarea,
 .volunteer-form button {
     display: block;
-    margin-bottom: 5px; /* Add space between each input field */
-    width: 60%; /* Make each input field full width */
+    margin-bottom: 5px; 
+    width: 70%; 
 }
 
-/* Style the fieldset and legend */
+.volunteer-form input,
+.volunteer-form textarea {
+    padding: 10px; 
+    border: 1px solid #ccc; 
+    border-radius: 5px; 
+    background-color: #ffffff; 
+    margin: 5px
+}
+
+.volunteer-form label {
+    color: #333;
+    font-size: 1.1rem;
+}
+
 .volunteer-form fieldset {
-    margin-bottom: 20px; /* Add space between the fieldset and other elements */
-    border: none; /* Remove default fieldset border */
+    margin-bottom: 20px; 
+    border: none; 
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: start;
+    gap: 10px; 
+    border: none;
+    
+}
+
+.volunteer-form button {
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 15px;
+    background-color: #860A35;
+    color: white;
+    font-size: 1.1rem;
 }
 
 .volunteer-form legend {
-    margin-bottom: 10px; /* Add space below the legend */
-    font-weight: bold; /* Make the legend text bold */
+    margin-bottom: 10px; 
+    font-weight: bold; 
 }
 
-/* Additional styling for checkboxes */
+
 .volunteer-form input[type="checkbox"] {
     display: inline-block;
     margin-right: 5px;
+    background-color: #f9f9f9;
     
+}
+
+.volunteer-form input[type="checkbox"],
+.volunteer-form input[type="date"] {
+    margin-left: 5px; /* Spacing between label and checkbox */
+    accent-color: #860A35; /* Style checkbox color */
+}
+
+.volunteer-form input[type="date"] {
+   
+    background: url('path/to/calendar-icon.png') no-repeat right; /* Add your calendar icon here */
+    background-size: 20px; /* Adjust size as necessary */
+    cursor: pointer;
 }
 
 .modal-content {
     top: 25%;
-    left: 50%;
-    
-    
+    left: 50%; 
     width: 30%;
     padding: 20px;
     background-color: rgba(255,255,255);
     border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); /* Add shadow effect */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); 
 }
 
 .modal-overlay {
@@ -49,7 +104,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+    background-color: rgba(0, 0, 0, 0.5); 
     backdrop-filter: blur(1px);
     display: flex;
     justify-content: center;

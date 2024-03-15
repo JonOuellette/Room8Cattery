@@ -232,7 +232,7 @@ function FosterDashboard() {
     if (error) return <div className="alert alert-danger">{error}</div>;
 
     return (
-        <div>
+        <div className='foster-dashboard'>
             <h2>{fosterDetails.first_name}'s Cats</h2>
             <div>
                 <h3>Foster Information</h3>

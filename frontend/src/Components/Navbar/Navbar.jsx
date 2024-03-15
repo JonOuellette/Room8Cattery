@@ -5,6 +5,7 @@ import Room8Api from '../../api/api';
 import './Navbar.css';
 import Room8Logo from '../../images/Room8Logo.png';
 
+
 const Navbar = () => {
     // const { user, setUser, setToken } = useContext(UserContext); // Now using setToken as well
     const { user, token, handleLogout } = useContext(UserContext);
@@ -25,7 +26,7 @@ const Navbar = () => {
 
     return (
         <nav className="navbar">
-             <div className="logo-and-name">
+            <div className="logo-and-name">
                 <div className="nav-brand">
                     <Link to="/">
                         <img src={Room8Logo} alt="Room8 Memorial Cat Foundation" />
