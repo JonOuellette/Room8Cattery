@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Room8Api from '../../api/api';
+import './ChangePassword.css'
 
 function ChangePasswordForm({ userId, close }) {
     const [passwordData, setPasswordData] = useState({ old_password: '', new_password: '' });
@@ -18,7 +19,7 @@ function ChangePasswordForm({ userId, close }) {
     };
 
     return (
-        <form onSubmit={handleSubmit}>
+        <form className='change-password-form' onSubmit={handleSubmit}>
             <label htmlFor="old-password">Old Password:</label>
             <input type="password" id="old-password" value={passwordData.old_password} onChange={(e) => setPasswordData({ ...passwordData, old_password: e.target.value })} />
             <label htmlFor="new-password">New Password:</label>
