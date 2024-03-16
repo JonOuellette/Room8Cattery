@@ -19,8 +19,6 @@ These features were implemented to ensure a comprehensive system for managing ca
 ## Running Tests
 
 Backend tests are located in the `tests` folder. To run them, navigate to your backend directory and execute:
-
-```bash
 python -m pytest
 
 ## Standard User Flow
