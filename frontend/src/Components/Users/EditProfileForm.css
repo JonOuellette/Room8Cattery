@@ -24,6 +24,7 @@
     border-radius: 5px;
     width: calc(100% - 22px); 
     background-color: white;
+    color: #333;
 }
 
 .edit-profile-form .error {

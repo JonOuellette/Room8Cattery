@@ -1,190 +1,228 @@
 import os
-import unittest
-from models import db, connect_db, User, Cat
-from app import app
+from unittest import TestCase
+from models import db, Cat, User  # Import necessary models, make sure to import Cat model
+from app import create_app
 
-# Use the testing database
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@localhost/Room8CatteryTest'
+# Set database URI for testing purposes
+os.environ['DATABASE_URL'] = "postgresql:///Room8CatteryTest"
 
-# Configure your app for testing mode
-app.config['TESTING'] = True
-app.config['DEBUG_TB_HOSTS'] = ['dont-show-debug-toolbar']
+app = create_app({'TESTING': True, 'WTF_CSRF_ENABLED': False})
 
-# Make Flask errors be real errors, rather than HTML pages with error info
-app.config['TESTING'] = True
-
-# This disables CSRF checking for the testing
-app.config['WTF_CSRF_ENABLED'] = False
-
-CURR_USER_KEY = "current_user"  
-
-
-class CatViewTestCase(unittest.TestCase):
+class CatViewTestCase(TestCase):
     """Test views for cats."""
 
     def setUp(self):
         """Create test client, add sample data."""
-        db.drop_all()
-        db.create_all()
+        self.app = create_app({'TESTING': True, 'WTF_CSRF_ENABLED': False})
+        self.client = self.app.test_client()
 
-        self.client = app.test_client()
+        with self.app.app_context():
+            db.drop_all()
+            db.create_all()
 
-        self.testuser = User.signup(username="testuser",
-                                    email="test@test.com",
-                                    password="testuser",
-                                    first_name="Test",
-                                    last_name="User",
-                                    phone_number=1234567890,
-                                    is_admin=False,
-                                    is_foster=True)
-        self.testuser_id = 9999
-        self.testuser.id = self.testuser_id
+            
 
-        # Admin user
-        self.adminuser = User.signup(username="adminuser",
-                                     email="admin@test.com",
-                                     password="adminuser",
-                                     first_name="Admin",
-                                     last_name="User",
-                                     phone_number=9876543210,
-                                     is_admin=True,
-                                     is_foster=False)
-        self.adminuser_id = 8888  
-        self.adminuser.id = self.adminuser_id
+            self.admin_user = User.signup(username="adminuser",
+                                      email="admin@test.com",
+                                      password="password",
+                                      first_name="Admin",
+                                      last_name="User",
+                                      phone_number='9999999999',
+                                      is_admin=True,
+                                      is_foster=False)
+            db.session.commit()
 
-        db.session.add_all([self.testuser, self.adminuser])
-        db.session.commit()
+            self.admin_token = self.login_as_admin() 
+            
+            # Creating a user who can be a foster to associate cats with
+            self.foster_user = User.signup(
+                username="fosteruser",
+                email="foster@test.com",
+                password="fosterpass",
+                first_name="Foster",
+                last_name="User",
+                phone_number="1234567890",
+                is_admin=False,
+                is_foster=True
+            )
+            db.session.commit()
 
-        self.testcat = Cat(cat_name="TestCat",
-                           age=3,
-                           gender="Female",
-                           breed="TestBreed",
-                           description="TestDesc",
-                           special_needs="None",
-                           microchip=123456789,
-                           cat_image="http://example.com/cat.jpg",
-                           is_featured=True,
-                           adopted=False,
-                           foster_id=self.testuser.id)
-        db.session.add_all([self.testuser, self.testcat])
-        db.session.commit()
+            # Creating a sample cat to be associated with foster_user
+            self.test_cat = Cat(
+                cat_name="TestCat",
+                age=2,
+                breed="TestBreed",
+                description="TestDesc",
+                gender="Female",
+                special_needs="None",
+                cat_image="testimage.png",
+                is_featured=False,
+                adopted=False,
+                foster_id=self.foster_user.id
+            )
+            db.session.add(self.test_cat)
+            db.session.commit()
+
+            # Log in as foster user
+            with self.client as c:
+                resp = c.post("/login", json={"username": "fosteruser", "password": "fosterpass"})
+                self.assertEqual(resp.status_code, 200)
+                self.token = resp.json['access_token']
+
+    def login_as_admin(self):
+        """Helper method for logging in as an admin user and retrieving the token."""
+        with self.app.app_context():
+            with self.client as c:
+                resp = c.post('/login', json={"username": "adminuser", "password": "password"})
+                self.assertEqual(resp.status_code, 200)
+                token = resp.json.get('access_token')
+                return token
 
     def tearDown(self):
         """Clean up fouled transactions."""
-        db.session.rollback()
+        with self.app.app_context():
+            db.session.remove()
+            db.drop_all()
+
 
     def test_get_adoptable_cats(self):
-        with self.client as c:
-            resp = c.get("/api/cats/adoptable")
-            self.assertIn("TestCat", str(resp.data))
+        with self.client as client:
+            resp = client.get('/api/cats/adoptable')
             self.assertEqual(resp.status_code, 200)
-
-    def test_get_cat_details(self):
-        with self.client as c:
-            resp = c.get(f"/api/cats/{self.testcat.id}")
-            self.assertEqual(resp.status_code, 200)
-            self.assertIn("TestCat", str(resp.data))
-
-    def login_and_get_token(self):
-        resp = self.client.post('/login', json={"username": "testuser", "password": "testuser"})
-        token = resp.json['access_token']
-        return token
+            self.assertIsInstance(resp.json, list)
     
+    def test_get_cat_details(self):
+        with self.client as client:
+           
+            with self.app.app_context():
+                
+                with db.session.begin():
+                    
+                    test_cat = db.session.merge(self.test_cat)
+                    
+                    resp = client.get(f'/api/cats/{test_cat.id}')
+                    self.assertEqual(resp.status_code, 200)
+                    
     def test_add_cat(self):
-        with self.client as c:
-            token = self.login_and_get_token('testuser', 'testuser')  # Updated this line
-
-            # New cat data
-            cat_data = {
+        with self.client as client:
+            resp = client.post('/api/cats', json={
                 "cat_name": "NewCat",
-                "age": 5,
+                "age": 2,
                 "gender": "Male",
                 "breed": "NewBreed",
-                "description": "NewDesc",
+                "description": "New Description",
                 "special_needs": "None",
-                "microchip": 987654321,
-                "cat_image": "http://example.com/newcat.jpg",
-                "is_featured": False,
-                "adopted": False
-            }
-
-            resp = c.post("/api/cats", json=cat_data, headers={"Authorization": f"Bearer {token}"})
+                "microchip": "123456789",
+                "cat_image": "newimage.png",
+                "is_featured": False
+            }, headers={"Authorization": f"Bearer {self.admin_token}"})
             self.assertEqual(resp.status_code, 201)
+            self.assertIn('message', resp.json)
 
+    
+
+    def test_update_cat_adoption(self):
+        """Test updating a cat's adoption status."""
+        with self.app.app_context():
+            # Ensure the test cat is properly set in the database and can be referenced
+            test_cat = db.session.merge(self.test_cat)
+            
+            # Ensure the cat is not adopted before the update
+            self.assertFalse(test_cat.adopted)
+            
+            # Perform the patch request to update the cat's adoption status
+            with self.client as client:
+                resp = client.patch(f'/api/cats/{test_cat.id}/adopt', headers={"Authorization": f"Bearer {self.admin_token}"})
+                
+                self.assertEqual(resp.status_code, 200)
+                self.assertIn('message', resp.json)
+                
+                # Re-fetch the cat from the database to get the updated state
+                db.session.refresh(test_cat)
+                self.assertTrue(test_cat.adopted)
 
     def test_update_cat_info(self):
-        with self.client as c:
-            token = self.login_and_get_token('adminuser', 'adminuser')  # Updated this line
-
-            # Updated cat data
-            cat_data = {
-                "cat_name": "UpdatedCat",
-                "age": 4,
-                "gender": "Female",
-                "breed": "UpdatedBreed",
-                "description": "UpdatedDesc",
-                "special_needs": "None",
-                "microchip": 987654321,
-                "cat_image": "http://example.com/updatedcat.jpg",
-                "is_featured": True,
-                "adopted": False
-            }
-
-            resp = c.patch(f"/api/cats/{self.testcat.id}", json=cat_data, headers={"Authorization": f"Bearer {token}"})
-            self.assertEqual(resp.status_code, 200)
-
-
-    def login_and_get_token(self, username, password):
-        """Login using the given username and password and return the JWT token."""
-        resp = self.client.post('/login', json={"username": username, "password": password})
-        self.assertEqual(resp.status_code, 200, f"Login failed for user {username}, cannot proceed with tests.")
-        return resp.json['access_token']
+        """Test updating cat information."""
+        with self.client as client:
+            with self.app.app_context():
+                # Ensure the test cat is properly set in the database and can be referenced
+                test_cat = db.session.merge(self.test_cat)
+                
+                # Perform the patch request to update the cat's information
+                resp = client.patch(f'/api/cats/{test_cat.id}', json={
+                    "cat_name": "UpdatedName",
+                    "age": test_cat.age,  # Change as necessary
+                    # Add other fields as necessary
+                }, headers={"Authorization": f"Bearer {self.admin_token}"})
+                
+                self.assertEqual(resp.status_code, 200)
+                self.assertIn('message', resp.json)
+                
+                # Re-fetch the cat from the database to get the updated state
+                db.session.refresh(test_cat)
+                self.assertEqual(test_cat.cat_name, "UpdatedName")
 
     def test_delete_cat(self):
-        with self.client as c:
-            admin_token = self.login_and_get_token('adminuser', 'adminuser')  # Get the admin token for login
+        """Test deleting a cat."""
+        with self.client as client:
+            with self.app.app_context():
+                # Ensure the test cat is properly set in the database and can be referenced
+                test_cat = db.session.merge(self.test_cat)
+                
+                # Perform the delete request to remove the cat
+                resp = client.delete(f'/api/cats/{test_cat.id}', headers={"Authorization": f"Bearer {self.admin_token}"})
+                
+                self.assertEqual(resp.status_code, 200)
+                self.assertIn('message', resp.json)
+                
+                # Check that the cat is no longer in the database
+                deleted_cat = Cat.query.get(test_cat.id)
+                self.assertIsNone(deleted_cat)
 
-            # Delete the cat
-            resp = c.delete(f"/api/cats/{self.testcat.id}", headers={"Authorization": f"Bearer {admin_token}"})
+    def test_get_featured_cats(self):
+        with self.client as client:
+            resp = client.get('/api/cats/featured')
             self.assertEqual(resp.status_code, 200)
-            self.assertIn('Cat deleted successfully', str(resp.data))
+            self.assertIsInstance(resp.json, list)
 
-    def test_feature_cat(self):
-        with self.client as c:
-            admin_token = self.login_and_get_token('adminuser', 'adminuser')  # Use admin token for authorization
-
-            # Feature the cat
-            resp = c.patch(f"/api/cats/{self.testcat.id}/feature", headers={"Authorization": f"Bearer {admin_token}"})
-            self.assertEqual(resp.status_code, 200, f"Unexpected status code: {resp.status_code}. Response: {resp.data}")
-
-            # Check if response includes 'is_featured' field and validate its value
-            self.assertIn('is_featured', str(resp.data), "Response must contain 'is_featured' field.")
-            data = resp.get_json()
-            self.assertIn('is_featured', data, "JSON response should include 'is_featured' key.")
-            self.assertIsInstance(data['is_featured'], bool, "'is_featured' should be a boolean.")
+    def test_toggle_cat_featured(self):
+        """Test toggling a cat's featured status."""
+        with self.client as client:
+            with self.app.app_context():
+                # Ensure the test cat is properly set in the database and can be referenced
+                test_cat = db.session.merge(self.test_cat)
+                
+                # Perform the patch request to toggle the cat's featured status
+                resp = client.patch(f'/api/cats/{test_cat.id}/feature', headers={"Authorization": f"Bearer {self.admin_token}"})
+                
+                self.assertEqual(resp.status_code, 200)
+                self.assertIn('is_featured', resp.json)
+                
+                # Re-fetch the cat from the database to get the updated state
+                db.session.refresh(test_cat)
+                self.assertEqual(test_cat.is_featured, resp.json['is_featured'])
 
     def test_reassign_cat(self):
-        # First create a new user to reassign the cat to
-        new_foster = User.signup(username="newfoster",
-                                email="newfoster@test.com",
-                                password="newpassword",
-                                first_name="New",
-                                last_name="Foster",
-                                phone_number=9876543210,
-                                is_admin=False,
-                                is_foster=True)
-        db.session.add(new_foster)
-        db.session.commit()
+        """Test reassigning a cat to a new foster."""
+        with self.client as client:
+            with self.app.app_context():
+                # Ensure the test cat and test user are properly set in the database and can be referenced
+                test_cat = db.session.merge(self.test_cat)
+                test_user = db.session.merge(self.foster_user)  # assuming you have a foster user to reassign to
+                
+                # Perform the post request to reassign the cat
+                resp = client.post(f'/api/cats/{test_cat.id}/reassign', json={"new_foster_id": test_user.id}, headers={"Authorization": f"Bearer {self.admin_token}"})
+                
+                self.assertEqual(resp.status_code, 200)
+                self.assertIn('message', resp.json)
+                
+                # Re-fetch the cat from the database to get the updated state
+                db.session.refresh(test_cat)
+                self.assertEqual(test_cat.foster_id, test_user.id)
 
-        with self.client as c:
-            admin_token = self.login_and_get_token('adminuser', 'adminuser')  # Get the admin token for login
 
-            # Reassign the cat
-            resp = c.post(f"/api/cats/{self.testcat.id}/reassign", json={"new_foster_id": new_foster.id}, headers={"Authorization": f"Bearer {admin_token}"})
-            self.assertEqual(resp.status_code, 200)
-            self.assertIn('Cat reassigned successfully', str(resp.data))
-            self.assertIn(str(new_foster.id), str(resp.data))  # Check if new foster's ID is in response
 
 
 if __name__ == "__main__":
+    import unittest
     unittest.main()

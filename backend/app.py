@@ -313,21 +313,32 @@ def create_app(test_config=None):
         data = request.json
         print("USER TO UPDATE:", user_to_update)
         print("IS THE USER A FOSTER?",current_user.is_foster)
-        # Allows fosters to update email and phone number
-        if current_user.is_foster:
-            user_to_update.email = data.get('email', user_to_update.email)
-            user_to_update.phone_number = data.get('phone_number', user_to_update.phone_number)
-        # Allows admin to update all user information including foster user information    
-        elif current_user.is_admin:
-            user_to_update.first_name = data.get('first_name', user_to_update.first_name)
-            user_to_update.last_name = data.get('last_name', user_to_update.last_name)
-            user_to_update.email = data.get('email', user_to_update.email)
-            user_to_update.phone_number = data.get('phone_number', user_to_update.phone_number)
-            user_to_update.is_foster = data.get('is_foster', user_to_update.is_foster)
-            user_to_update.is_admin = data.get('is_admin', user_to_update.is_admin)
-        
-        db.session.commit()
-        return jsonify({'message': 'User information updated successfully'}), 200
+
+        try:
+            # Allows fosters to update email and phone number
+            if current_user.is_foster:
+                # user_to_update.email = data.get('email', user_to_update.email)
+                if 'email' in data:
+                    user_to_update.email = data['email']
+                user_to_update.phone_number = data.get('phone_number', user_to_update.phone_number)
+            # Allows admin to update all user information including foster user information    
+            elif current_user.is_admin:
+                user_to_update.first_name = data.get('first_name', user_to_update.first_name)
+                user_to_update.last_name = data.get('last_name', user_to_update.last_name)
+                # user_to_update.email = data.get('email', user_to_update.email)
+                if 'email' in data:
+                    user_to_update.email = data['email'] 
+                user_to_update.phone_number = data.get('phone_number', user_to_update.phone_number)
+                user_to_update.is_foster = data.get('is_foster', user_to_update.is_foster)
+                user_to_update.is_admin = data.get('is_admin', user_to_update.is_admin)
+            
+            db.session.commit()
+            return jsonify({'message': 'User information updated successfully'}), 200
+    
+        except ValueError as e:
+            # Handle the validation error
+            db.session.rollback()  # Rollback the session to avoid inconsistent states
+            return jsonify({'error': str(e)}), 400
 
     @app.route('/api/users/<int:user_id>', methods=['DELETE'])
     @jwt_required()
