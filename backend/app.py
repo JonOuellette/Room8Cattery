@@ -69,8 +69,11 @@ def create_app(test_config=None):
 
     def initialize_google_sheets():
         scopes = ['https://www.googleapis.com/auth/spreadsheets']
-        service_account_file = os.path.join(os.getcwd(), 'config', 'room8cattery-397dd6b798b8.json')
-
+        ##local path
+        # service_account_file = os.path.join(os.getcwd(), 'config', 'room8cattery-397dd6b798b8.json')
+        ### Render path
+        service_account_file = '/etc/secrets/credentials.json'
+        
         credentials = Credentials.from_service_account_file(
             service_account_file, scopes=scopes)
 
