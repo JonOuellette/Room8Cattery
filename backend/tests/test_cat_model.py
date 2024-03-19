@@ -12,7 +12,7 @@ class CatModelTestCase(unittest.TestCase):
         self.app_context = self.app.app_context()
         self.app_context.push()
         db.create_all()
-        # Correct the line below:
+        
         print("********************************Testing database URI:", self.app.config['SQLALCHEMY_DATABASE_URI'])
         # Create sample user
         user1 = User.signup("testuser100", "test@test.com", "password", "Test", "User", 1234567890, False, True)

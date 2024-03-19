@@ -142,7 +142,9 @@ class Room8Api {
         return this.request('api/export/fosters');
     }
 
- 
+    static async exportVolunteers() {
+        return this.request('api/export/volunteers');
+    }
 
 }
 

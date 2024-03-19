@@ -1,12 +1,13 @@
 .volunteer-page {
     max-width: 100%; 
+
      
 }
 
 .volunteer-intro {
-    max-width: 66.67%; /* Adjusts the max-width to compress the text */
-    margin: 0 auto; /* Centers the section horizontally */
-    padding: 20px; /* Adds padding for spacing */
+    max-width: 66.67%; 
+    margin: 0 auto; 
+    padding: 20px; 
 }
 
 .volunteer-intro h1{
@@ -41,7 +42,7 @@
 }
 
 .volunteer-button:hover {
-    background-color: #A3B763; /* Changes the background color on hover, adjust as needed */
+    background-color: #A3B763; 
 }
 
 
@@ -64,5 +65,5 @@
 }
 
 .modal-content{
-    margin-top: 50px;
+    margin-top: 75px;
 }

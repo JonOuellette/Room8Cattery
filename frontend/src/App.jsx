@@ -2,7 +2,7 @@ import React, {useState} from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { UserProvider } from './Components/UserContext';
 import Navbar from './Components/Navbar/Navbar';
-import AppRoutes from './Routes/AppRoutes'; // Assuming your routes are managed here
+import AppRoutes from './Routes/AppRoutes'; 
 
 function App() {
   return (

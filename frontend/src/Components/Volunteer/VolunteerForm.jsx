@@ -101,7 +101,7 @@ function VolunteerForm() {
                         onChange={handleChange} 
                     />
                 </label>
-                <fieldset>
+                <fieldset className='days-avail-container'>
                     <legend>Days Available:</legend>
                     {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
                         <label key={day}>

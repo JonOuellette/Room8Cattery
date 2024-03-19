@@ -31,8 +31,8 @@
 }
 
 .image-container img {
-    width: auto; /* Adjust this to 'auto' or specific px to use the actual size of the image */
-    max-width: 100%; /* Ensures the image is fully visible but does not exceed its container */
+    width: auto; 
+    max-width: 100%; 
     height: auto; /* Maintain aspect ratio */
 }
 .about-image {

@@ -1,5 +1,5 @@
 import React from 'react';
-import './AboutUs.css'; // Make sure to create a corresponding CSS file for styling
+import './AboutUs.css'; 
 import Room8Cat from '../../images/Room8Cat.png';
 import OurTeamList from '../OurTeam/OurTeamList';
 

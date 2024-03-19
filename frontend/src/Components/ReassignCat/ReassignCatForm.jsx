@@ -30,7 +30,7 @@ const ReassignCatForm = ({ catId, closeModal, onCatReassigned }) => {
             closeModal(); // Close the modal after successful reassignment
         } catch (error) {
             console.error("Failed to reassign cat:", error);
-            // Optionally add error handling/display here
+            // Future: add error handling/display here
         }
     };
 

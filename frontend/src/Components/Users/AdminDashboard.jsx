@@ -12,6 +12,7 @@ const AdminDashboard = () => {
   const [fosterUpdated, setFosterUpdated] = useState(false);
   const [catsSheetUrl, setCatsSheetUrl] = useState('');
   const [fostersSheetUrl, setFostersSheetUrl] = useState('');
+  const [volunteersSheetUrl, setVolunteersSheetUrl] = useState('');
 
   // Function to handle export of cat data to Google Sheets
   const handleExportCats = async () => {
@@ -24,6 +25,7 @@ const AdminDashboard = () => {
     }
   };
 
+  // Function to handle export of fosters to Google Sheet
   const handleExportFosters = async () => {
     try {
       const response = await Room8Api.exportFosters();
@@ -32,6 +34,17 @@ const AdminDashboard = () => {
       console.error('Failed to export fosters:', error);
     }
   };
+
+  const handleExportVolunteers = async () => {
+    try {
+      const response = await Room8Api.exportVolunteers();
+      console.log("RESPONSE:", response)
+      setVolunteersSheetUrl(response.sheet_url);
+    } catch (error) {
+      console.error('Failed to export volunteers:', error);
+    }
+  };
+
 
   ReactModal.setAppElement('#root');
 
@@ -47,6 +60,8 @@ const AdminDashboard = () => {
       {catsSheetUrl && <a href={catsSheetUrl} target="_blank" rel="noopener noreferrer">View Exported Cats</a>}
       <button onClick={handleExportFosters}>Export Fosters to Google Sheets</button>
       {fostersSheetUrl && <a href={fostersSheetUrl} target="_blank" rel="noopener noreferrer">View Exported Fosters</a>}
+      <button onClick={handleExportVolunteers}>Export Volunteers to Google Sheets</button>
+      {volunteersSheetUrl && <a href={volunteersSheetUrl} target="_blank" rel="noopener noreferrer">View Exported Volunteers</a>}
 
       {/* Modal for creating a new account */}
       <ReactModal

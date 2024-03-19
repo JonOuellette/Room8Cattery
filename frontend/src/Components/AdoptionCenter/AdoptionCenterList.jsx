@@ -4,7 +4,7 @@ import './AdoptionCenterList.css';
 import AdoptionCenter from './AdoptionCenter';
 
 
-// Assuming this data might come from a backend or a static file
+
 
 const AdoptionCentersList = () => {
     return (

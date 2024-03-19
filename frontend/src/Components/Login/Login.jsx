@@ -27,7 +27,7 @@ function Login() {
         e.preventDefault();
         try {
             const res = await Room8Api.login(formData);
-            if (res.access_token) {  // Ensure you're using the correct key for the token based on your backend response
+            if (res.access_token) {  // Ensures using the correct key for the token based on your backend response
                 setUser(res.user);
                 setToken(res.access_token);  // Saving token to context and local storage if necessary
                 Room8Api.setToken(res.access_token);  // Setting token for future requests

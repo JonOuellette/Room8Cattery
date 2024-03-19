@@ -54,7 +54,7 @@ def create_app(test_config=None):
 ####################################################
 # Helper functions 
 
-#Helper function for role checks
+    #Helper function for role checks
     def is_admin(current_user = None):
         return (g.user and ( g.user.is_admin)) or (current_user and ( current_user["is_admin"]))
 
@@ -750,6 +750,49 @@ def create_app(test_config=None):
         # Return the URL along with the updated cells count
         return jsonify({'updated_cells': result.get('updatedCells'), 'sheet_url': sheet_url})
 
+    @app.route('/api/export/volunteers')
+    @jwt_required()
+    def export_volunteers_to_sheet():
+        # Get the identity of the current user
+        current_user_id = get_jwt_identity()['id']
+        current_user = User.query.get(current_user_id)
+        
+        # Check if the current user is an admin
+        if not current_user.is_admin:
+            return jsonify({'error': 'Unauthorized, admin access required'}), 403
+
+        spreadsheet_id = '1g3ZoPFgyB7uEeYFu446DlRj3ITIkKpy1SMgUNXPMrBI'  # Google Sheet ID
+        range_name = 'Volunteers!A1'
+
+        # Fetch volunteer data from your database
+        volunteers = Volunteer.query.all()
+        values = [['ID', 'First Name', 'Last Name', 'Email', 'Phone', 'Days Available', 'Start Date', 'About']]  # Column headers
+        for volunteer in volunteers:
+            values.append([
+                volunteer.id, 
+                volunteer.first_name, 
+                volunteer.last_name, 
+                volunteer.email, 
+                volunteer.phone or '', 
+                volunteer.days_available or '', 
+                volunteer.start_date.strftime('%Y-%m-%d') if volunteer.start_date else '',
+                volunteer.about or ''
+            ])
+
+        # Initialize Google Sheets API
+        sheet = initialize_google_sheets()
+        body = {'values': values}
+        result = sheet.values().update(
+            spreadsheetId=spreadsheet_id,
+            range=range_name,
+            valueInputOption='RAW',
+            body=body).execute()
+
+        # Construct the URL to the Google Sheet
+        sheet_url = f"https://docs.google.com/spreadsheets/d/{spreadsheet_id}"
+
+        # Return the URL along with the updated cells count
+        return jsonify({'updated_cells': result.get('updatedCells'), 'sheet_url': sheet_url})
 
     #####################################################################################################################
     # Volunteer form - allows users to submit form indicating interest in volunteering
@@ -765,7 +808,7 @@ def create_app(test_config=None):
                 last_name=data.get('last_name'),
                 email=data.get('email'),
                 phone=data.get('phone', ''),
-                days_available=','.join(data.get('days_available', [])),  # Expecting an array of days from React
+                days_available=','.join(data.get('days_available', [])),  # Gets an array of days from React
                 start_date=datetime.strptime(data.get('start_date'), '%Y-%m-%d'),
                 about=data.get('about', '')
             )
