@@ -4,6 +4,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import Room8Api from '../../api/api';
 import ReactModal from 'react-modal';
 import AdminEditProfileForm from './AdminEditProfileForm';
+import './FosterDashboard.css';
 
 function FosterDashboard() {
     const { user } = useContext(UserContext);
@@ -47,6 +48,7 @@ function FosterDashboard() {
                     details = await Room8Api.getUserDetails();
                 }
                 setFosterDetails(details);
+                console.log('SET FOSTER DETAILS:',details)
             } catch (err) {
                 console.error('Failed to fetch foster details:', err);
                 setError('Failed to fetch foster details. Please try again later.');
@@ -83,12 +85,13 @@ function FosterDashboard() {
 
     return (
         <div className='foster-dashboard'>
+            <div className='foster-info-container'>
             <h2>{fosterDetails.first_name}'s Cats</h2>
             <div>
-                {/* <h3>Foster Information</h3>
+                <h3>Foster Information</h3>
                 <p>Name: {fosterDetails.first_name} {fosterDetails.last_name}</p>
                 <p>Email: {fosterDetails.email}</p>
-                <p>Phone: {fosterDetails.phone_number}</p> */}
+                <p>Phone: {fosterDetails.phone_number}</p>
                 {user.is_admin && (
                     <>
                         <button onClick={() => setIsEditing(true)}>Edit Foster Profile</button>
@@ -96,7 +99,8 @@ function FosterDashboard() {
                     </>
                 )}
             </div>
-            {cats.length === 0 ? <div>No cats listed for this foster.</div> : cats.map(cat => (
+            </div>
+            {cats.length === 0 ? <div className='cat-list-container'>No cats listed for this foster.</div> : cats.map(cat => (
                 <div key={cat.id} className="cat-card">
                     <Link to={`/cats/${cat.id}`}>
                         <h3>{cat.name}</h3>

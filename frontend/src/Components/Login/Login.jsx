@@ -36,7 +36,8 @@ function Login() {
                 throw new Error('No token received');
             }
         } catch (err) {
-            setError(err.message || 'Failed to login');
+            const errorMessage = err.response?.data?.msg || 'Failed to login';
+            setError(errorMessage);
         }
     };
 

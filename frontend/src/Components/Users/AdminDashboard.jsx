@@ -69,13 +69,13 @@ const AdminDashboard = () => {
         onRequestClose={() => setIsCreatingAccount(false)}
         style={{
           content: {
-            top: '50%',
+            top: '55%',
             left: '50%',
             right: 'auto',
             bottom: 'auto',
             marginRight: '-50%',
             transform: 'translate(-50%, -50%)',
-            width: '50%' // Adjust based on your design
+            width: '45%' 
           }
         }}
       >

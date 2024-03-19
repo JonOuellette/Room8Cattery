@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Room8Api from '../../api/api';
+import "./CreateAccountForm.css";
 
 function CreateAccountForm({ closeModal, onUserCreated }) {
     const [formData, setFormData] = useState({
@@ -51,10 +52,11 @@ function CreateAccountForm({ closeModal, onUserCreated }) {
     };
 
     return (
-        <form onSubmit={handleSubmit}>
+        <form className = "create-account-form" onSubmit={handleSubmit}>
             <div>
                 <label htmlFor="username">Username:</label>
                 <input
+                    type="text"
                     name="username"
                     value={formData.username}
                     onChange={handleChange}
@@ -84,6 +86,7 @@ function CreateAccountForm({ closeModal, onUserCreated }) {
             <div>
                 <label htmlFor="first_name">First Name:</label>
                 <input
+                     type="text"
                     name="first_name"
                     value={formData.first_name}
                     onChange={handleChange}
@@ -93,6 +96,7 @@ function CreateAccountForm({ closeModal, onUserCreated }) {
             <div>
                 <label htmlFor="last_name">Last Name:</label>
                 <input
+                     type="text"
                     name="last_name"
                     value={formData.last_name}
                     onChange={handleChange}

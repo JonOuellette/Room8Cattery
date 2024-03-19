@@ -1,0 +1,23 @@
+.foster-info-container {
+    margin-top: 90px;
+    margin-left: 10px;
+}
+
+.foster-info-container h2 {
+    font-size: 2rem;
+    margin: 10px 0 10px 0
+}
+
+.foster-info-container h3 {
+    font-size: 1.2rem;
+    margin: 10px 0 10px 0
+}
+
+.foster-info-container p {
+    margin: 7px 0 5px 0;
+}
+
+.foster-info-container button {
+    margin-top: 15px;
+    
+}

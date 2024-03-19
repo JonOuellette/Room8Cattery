@@ -1,0 +1,60 @@
+
+.create-account-form {
+    max-width: 400px;
+    margin: 0px auto;
+}
+
+.create-account-form div {
+    margin-bottom: 20px;
+}
+
+.create-account-form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    background-color: white;
+    color: #666;
+    text-align: left;
+}
+
+
+.create-account-form input[type="text"],
+.create-account-form input[type="email"],
+.create-account-form input[type="password"],
+.create-account-form input[type="tel"],
+.create-account-form input[type="checkbox"] {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    color: #333;
+    
+    
+}
+
+.create-account-form input[type="checkbox"] {
+    width: auto;
+    background-color: white;
+}
+
+.create-account-form button {
+    padding: 10px 20px;
+    background-color: #860A35;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+.create-account-form button[type="button"] {
+    background-color: #ccc;
+    color: #333;
+    margin-right: 10px;
+}
+
+.create-account-form button[type="submit"]:hover,
+.create-account-form button[type="button"]:hover {
+    background-color: #A3B763;
+}
