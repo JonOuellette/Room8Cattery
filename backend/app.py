@@ -16,7 +16,14 @@ import requests
 import re
 import random
 
-from secretkeys import MY_SECRET_KEY, MY_JWT_SECRET_KEY, STRIPE_API_KEY
+#importing keys from local file
+# from secretkeys import MY_SECRET_KEY, MY_JWT_SECRET_KEY, STRIPE_API_KEY
+
+#switching to environmental variables for secrets
+MY_SECRET_KEY = os.environ.get('MY_SECRET_KEY')
+MY_JWT_SECRET_KEY = os.environ.get('MY_JWT_SECRET_KEY')
+STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY')
+
 from models import connect_db, User, db, Cat, Volunteer, Donation, Adoption
 from forms import VolunteerForm, CatForm
 
