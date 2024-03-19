@@ -19,7 +19,7 @@ import random
 #importing keys from local file
 # from secretkeys import MY_SECRET_KEY, MY_JWT_SECRET_KEY, STRIPE_API_KEY
 
-#switching to environmental variables for secrets
+# Environmental variables are used for sensitive information to enhance security
 MY_SECRET_KEY = os.environ.get('MY_SECRET_KEY')
 MY_JWT_SECRET_KEY = os.environ.get('MY_JWT_SECRET_KEY')
 STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY')
@@ -27,10 +27,11 @@ STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY')
 from models import connect_db, User, db, Cat, Volunteer, Donation, Adoption
 from forms import VolunteerForm, CatForm
 
-# Global constants (it's fine to keep them outside since they are constants)
+# Global constants - these are used across the app, hence defined globally for easy access
 CURR_USER_KEY = "curr_user"
 DEFAULT_IMAGE_URL = "https://www.freeiconspng.com/uploads/cats-paw-icon-17.png"
 
+# Initialize Flask extensions
 migrate = Migrate()
 jwt = JWTManager()
 
@@ -38,8 +39,15 @@ jwt = JWTManager()
 def create_app(test_config=None):
     app = Flask(__name__)
 
+     # Fetch the database URL from the environment and replace 'postgres://' with 'postgresql://'
+    database_url = os.environ.get('DATABASE_URL', 'postgresql://postgres:postgres@localhost/Room8Cattery')
+    corrected_database_url = database_url.replace("postgres://", "postgresql://", 1)
+    
+    #local variable to access database
+    #SQLALCHEMY_DATABASE_URI=os.environ.get('DATABASE_URL', 'postgresql://postgres:postgres@localhost/Room8Cattery'),
+
     app.config.from_mapping(
-        SQLALCHEMY_DATABASE_URI=os.environ.get('DATABASE_URL', 'postgresql://postgres:postgres@localhost/Room8Cattery'),
+        SQLALCHEMY_DATABASE_URI=corrected_database_url,
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         SQLALCHEMY_ECHO=False,
         DEBUG_TB_INTERCEPT_REDIRECTS=False,
@@ -47,7 +55,7 @@ def create_app(test_config=None):
         JWT_SECRET_KEY=os.environ.get('JWT_SECRET_KEY', MY_JWT_SECRET_KEY),
         JWT_ACCESS_TOKEN_EXPIRES=timedelta(hours=1),
     )
-
+    # Test configuration:
     if test_config:
         # Overwrite default configuration with test configuration
         app.config.update(test_config)
@@ -88,7 +96,7 @@ def create_app(test_config=None):
         return service.spreadsheets()
     ####################################################
     # User signup/login/logout
-
+    # Before each request, attach the current user to the global object if they're logged in
     @app.before_request
     def add_user_to_g():
         """If we're logged in, add curr user to Flask global."""
