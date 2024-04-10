@@ -61,7 +61,9 @@ def create_app(test_config=None):
         app.config.update(test_config)
 
     bcrypt = Bcrypt(app)
-    CORS(app, origins=["http://127.0.0.1:5173"], supports_credentials=True)
+    # CORS(app, origins=["http://127.0.0.1:5173"], supports_credentials=True)
+    CORS(app, origins=["https://room8cattery-1.onrender.com"], supports_credentials=True)
+    
     jwt.init_app(app)
     connect_db(app)
     migrate.init_app(app, db) 
